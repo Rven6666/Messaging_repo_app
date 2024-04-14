@@ -4,6 +4,8 @@ this is where you'll find all of the get/post request handlers
 the socket event handlers are inside of socket_routes.py
 '''
 
+
+import bcrypt
 from flask import Flask, render_template, request, abort, url_for
 from flask_socketio import SocketIO
 import db
@@ -31,7 +33,7 @@ def index():
 
 # login page
 @app.route("/login")
-def login():    
+def login():
     return render_template("login.jinja")
 
 # handles a post request when the user clicks the log in button
@@ -41,14 +43,16 @@ def login_user():
         abort(404)
 
     username = request.json.get("username")
-    password = request.json.get("password")
 
-    user =  db.get_user(username)
+    user = db.get_user(username)
     if user is None:
         return "Error: User does not exist!"
 
-    if user.password != password:
-        return "Error: Password does not match!"
+    # if user.password != password:
+    #     return "Error: Password does not match!"
+    
+    if not bcrypt.checkpw(request.json.get("password").encode('utf-8'), user.password):
+        return "Error: Password does not match!"        
 
     return url_for('home', username=request.json.get("username"))
 
@@ -63,7 +67,7 @@ def signup_user():
     if not request.is_json:
         abort(404)
     username = request.json.get("username")
-    password = request.json.get("password")
+    password = bcrypt.hashpw(request.json.get("password").encode('utf-8'), bcrypt.gensalt())
 
     if db.get_user(username) is None:
         db.insert_user(username, password)
@@ -81,7 +85,6 @@ def home():
     if request.args.get("username") is None:
         abort(404)
     return render_template("home.jinja", username=request.args.get("username"))
-
 
 
 if __name__ == '__main__':
