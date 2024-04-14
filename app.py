@@ -86,3 +86,4 @@ def home():
 
 if __name__ == '__main__':
     socketio.run(app)
+    #socketio.run(app,ssl_context=('certs/jili4976.tsm.crt', 'certs/jili4976.tsm.key'))
