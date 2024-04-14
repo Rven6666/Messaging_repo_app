@@ -12,14 +12,15 @@
     }
 
     #whole_app {
-        width: 600px;
+        width: 800px;
         /* Set the width of the centered div */
         margin: 0 auto;
         /* Set margin-left and margin-right to auto */
     }
 
     #message_box_container,
-    #user_boxes {
+    #user_boxes,
+    #friend_boxes {
         display: inline-block;
         vertical-align: top;
         margin-left: 10px;
@@ -35,7 +36,9 @@
 
     #message_box,
     #friend_list,
-    #user_list {
+    #user_list,
+    #request_sent,
+    #request_recieved {
         border-radius: 8px;
         border: 1px solid black;
         overflow: auto;
@@ -51,7 +54,9 @@
     }
 
     #friend_list,
-    #user_list {
+    #user_list,
+    #request_sent,
+    #request_recieved {
         width: 30%;
         height: 180px;
         min-width: 160px;
@@ -119,6 +124,13 @@
                 <button onclick="addFriend()">+</button>
                 <button onclick=">removeFriend()">-</button>
             </section>
+        </div>
+        <div id="friend_boxes">
+            Requests sent:
+            <section id="request_sent"></section>
+            <div class="space"></div>
+            Requests recieved:
+            <section id="request_recieved"></section>
         </div>
 </main>
 
