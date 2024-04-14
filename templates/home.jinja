@@ -4,59 +4,123 @@
 {% extends 'base.jinja' %}
 
 
-{% block content %} 
-   <style>
+{% block content %}
+<style>
     nav {
         border-bottom: 1px solid black;
-        overflow: auto
+        overflow: auto;
+    }
+
+    #whole_app {
+        width: 600px;
+        /* Set the width of the centered div */
+        margin: 0 auto;
+        /* Set margin-left and margin-right to auto */
+    }
+
+    #message_box_container,
+    #user_boxes {
+        display: inline-block;
+        vertical-align: top;
+        margin-left: 10px;
+        margin-right: 10px;
+    }
+
+    #chat_box,
+    #input_box {
+        vertical-align: top;
+        margin-top: 10px;
+        margin-right: 10px;
+    }
+
+    #message_box,
+    #friend_list,
+    #user_list {
+        border-radius: 8px;
+        border: 1px solid black;
+        overflow: auto;
+        padding: 2px;
+        box-sizing: border-box;
     }
 
     #message_box {
-        border: 1px solid black; 
-        height: 400px; 
-        width: 800px; 
-        overflow: auto;
-        padding: 2px;
+        width: 60%;
+        height: 400px;
+        min-width: 300px;
+        max-width: 800px;
     }
 
-    .text  {
+    #friend_list,
+    #user_list {
+        width: 30%;
+        height: 180px;
+        min-width: 160px;
+        max-width: 200px;
+        margin-bottom: 10px;
+    }
+
+    #receiver,
+    {
+    width: 60%;
+    min-width: 245px;
+    max-width: 800px;
+    }
+
+    .box_size {
+        width: 100px;
+    }
+
+    .text {
         margin-top: 2px;
         margin-bottom: 2px;
     }
 
+    .space {
+        margin-top: 22px;
+    }
 </style>
 
 <!--Navbar, you'll see the username here-->
 <nav style="border-bottom: 1px solid black;">
     <ol style="float: right">
-        <li style="display:inline-block">Username:  {{ username }} </li>
+        <li style="display:inline-block">Username: {{ username }} </li>
     </ol>
 </nav>
 
-<h1>Messaging App </h1>
-
 <main>
-    <!-- The messages are displayed here -->
-    <section id="message_box"></section>
-
-    <!-- These part ideally should be a form element, 
-    but I wrote this code a year ago and I don't want to break anything...-->
-    <section id="chat_box">
-        <p class="text">Chat with: </p>
-        <input id="receiver" placeholder="username">
-        <!-- MDN says its bad practice to use the onclick attribute,
+    <div id="whole_app">
+        <h1>Messaging App </h1>
+        <div id="message_box_container">
+            Chat box
+            <section id="message_box"></section>
+            <section id="chat_box">
+                <p class="text">Chat with: </p>
+                <input id="receiver" placeholder="username">
+                <!-- MDN says its bad practice to use the onclick attribute,
         but we're using it anyways coz its easy :)-->
-        <button onclick="join_room()">Chat</button>
-    </section>
-
-    <!-- The (message) input box is set to display: none initially, 
-    this means the input box is "invisible" initially-->
-    <section id="input_box" style="display: none" >
-        <p class="text">Message: </p>
-        <input id="message" placeholder="message">
-        <button onclick="send()">Send</button>
-        <button onclick="leave()">Leave Room</button>
-    </section>
+                <button onclick="join_room()">Chat</button>
+            </section>
+            <section id="input_box" style="display: none">
+                <p class="text">Message: </p>
+                <input id="message" placeholder="message">
+                <button onclick="send()">Send</button>
+                <button onclick="leave()">Leave Room</button>
+            </section>
+        </div>
+        <div id="user_boxes">
+            Friends list
+            <section id="friend_list"></section>
+            <div class="space"></div>
+            Online users
+            <section id="user_list"></section>
+            <section id="add_friend">
+                <p class="text">Add or Remove Friend:</p>
+                <input id="add_friend" class="box_size" placeholder="username">
+                <!--- FIX THIS BUTTON TO WORK WITH FRIENDS LIST-------------------------------->
+                <button onclick="addFriend()">+</button>
+                <button onclick=">removeFriend()">-</button>
+            </section>
+        </div>
 </main>
 
 <script src="/static/js/libs/socket.io.min.js"></script>
@@ -73,7 +137,7 @@
 
     // when the user presses the enter key inside of the "receiver box"
     // the user joins a (socket) room
-     $("#receiver").on("keyup", (e) => {
+    $("#receiver").on("keyup", (e) => {
         if (e.key == "Enter") {
             join_room();
         }
@@ -93,7 +157,7 @@
         $("#input_box").show();
         room_id = parseInt(Cookies.get("room_id"));
     })
-    
+
     // Here's the Socket IO part of the code
     // things get a bit complicated here so brace yourselves :P
     let username = "{{ username }}";
@@ -104,20 +168,20 @@
     const socket = io();
 
     // an incoming message arrives, we'll add the message to the message box
-    socket.on("incoming", (msg, color="black") => {
+    socket.on("incoming", (msg, color = "black") => {
         add_message(msg, color);
     })
-    
+
     // we'll send the message to the server by emitting a "send" event
     function send() {
         let message = $("#message").val();
         $("#message").val("");
-        socket.emit("send", username, message, room_id);  
-    } 
+        socket.emit("send", username, message, room_id);
+    }
 
     // we emit a join room event to the server to join a room
     function join_room() {
-       
+
         let receiver = $("#receiver").val();
 
         // pass in the receiver of our message to the server
@@ -138,7 +202,7 @@
             $("#chat_box").hide();
             $("#input_box").show();
         });
-     
+
     }
 
     // function when the user clicks on "Leave Room"
@@ -157,6 +221,6 @@
         let child = $(`<p style="color:${color}; margin: 0px;"></p>`).text(message);
         box.append(child);
     }
-    
+
 </script>
 {% endblock %}
