@@ -86,4 +86,5 @@ def home():
 
 if __name__ == '__main__':
     #socketio.run(app)
-    socketio.run(app,ssl_context=('certs/jili4976.crt', 'certs/jili4976.tsm.key'))#name after localhost:5000
+    #socketio.run(app,ssl_context=('certs/jili4976.crt', 'certs/jili4976.tsm.key'))     #localhost:5000
+    socketio.run(app,ssl_context=('certs/jili4976.tsm.crt', 'certs/jili4976.tsm.key'))  #https://127.0.0.1:5000
