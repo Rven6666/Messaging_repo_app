@@ -88,4 +88,6 @@ def home():
 
 
 if __name__ == '__main__':
-    socketio.run(app)
+    ssl_cert = 'certs/info2222.crt'  # SSL certificate file
+    ssl_key = 'certs/info2222.key'   # SSL private key file
+    socketio.run(app, host='127.0.0.1', port=5000, ssl_context=(ssl_cert, ssl_key))
