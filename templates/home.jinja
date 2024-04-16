@@ -53,6 +53,10 @@
         max-width: 800px;
     }
 
+    #friend_name {
+        min-width: 110px;
+    }
+
     #friend_list,
     #user_list,
     #request_sent,
@@ -118,18 +122,17 @@
             Online users
             <section id="user_list"></section>
             <section id="add_friend">
-                <p class="text">Add or Remove Friend:</p>
-                <input id="add_friend" class="box_size" placeholder="username">
-                <!--- FIX THIS BUTTON TO WORK WITH FRIENDS LIST-------------------------------->
-                <button onclick="addFriend()">+</button>
-                <button onclick=">removeFriend()">-</button>
+                <p class="text">Send friend request:</p>
+                <input id="friend_name" class="box_size" placeholder="username">
+                <button onclick="addFriend()">Add</button>
+                {# <button id=" remove_friend_button">-</button> #}
             </section>
         </div>
         <div id="friend_boxes">
-            Requests sent:
+            Requests sent to:
             <section id="request_sent"></section>
             <div class="space"></div>
-            Requests recieved:
+            Requests recieved from:
             <section id="request_recieved"></section>
         </div>
 </main>
@@ -154,6 +157,11 @@
         }
     })
 
+    $("#friend_name").on("keyup", (e) => {
+        if (e.key == "Enter") {
+            addFriend();
+        }
+    })
 
     $(document).ready(() => {
         // room_id is undefined if the user hasn't joined a room
@@ -233,5 +241,40 @@
         box.append(child);
     }
 
+    function addFriend() {
+        var friend = $("#friend_name").val();
+        let matchFound = false;
+        // Check if the input field is not empty
+        if (friend.trim() !== "") {
+            let sent_box = $("#request_sent");
+
+            // Iterate over each child element in sent_box
+            sent_box.children('p').each(function () {
+                let childText = $(this).text();
+                //checks for duplicate requests.
+                if (childText.trim() === (friend.trim() + "Cancel")) {
+                    alert(`Request already sent to ${friend}.`);
+                    matchFound = true;
+                    return;
+                }
+            });
+            if (matchFound) {
+                return; // if duplicate request is made it stops it adding again.
+            }
+            let child = $("<p style='color: black; margin: 0px; text-align: center;'></p>").text(friend);
+            let button = $("<button>").text("Cancel");
+            button.css("margin-left", "5px");
+            child.append(button); // appends request to sent
+            sent_box.append(child);
+
+            //cancels the friend request if cancel button is pushed.
+            button.on("click", function () {
+                child.remove();
+                button.remove();
+            });
+        } else {
+            alert("No user input, try again.")
+        }
+    }
 </script>
 {% endblock %}

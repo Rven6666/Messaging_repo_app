@@ -10,19 +10,15 @@ Prisma docs also looks so much better in comparison
 or use SQLite, if you're not into fancy ORMs (but be mindful of Injection attacks :) )
 '''
 
-from sqlalchemy import String
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from typing import Dict
 
 # data models
-
-
 class Base(DeclarativeBase):
     pass
 
 # model to store user information
-
-
 class User(Base):
     __tablename__ = "user"
 
@@ -45,8 +41,6 @@ class Counter():
         return self.counter
 
 # Room class, used to keep track of which username is in which room
-
-
 class Room():
     def __init__(self):
         self.counter = Counter()
@@ -74,3 +68,10 @@ class Room():
         if user not in self.dict.keys():
             return None
         return self.dict[user]
+    
+# friend request table
+class FriendRequest(Base):
+    __tablename__ = "friend_requests"
+
+    sender = Column(String, ForeignKey('user.username'),primary_key=True)
+    reciever = Column(String, ForeignKey('user.username'),primary_key=True)

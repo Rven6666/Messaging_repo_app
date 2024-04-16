@@ -2,7 +2,7 @@
 app.py contains all of the server application
 this is where you'll find all of the get/post request handlers
 the socket event handlers are inside of socket_routes.py
-'''
+''' 
 
 
 import bcrypt
@@ -47,9 +47,6 @@ def login_user():
     user = db.get_user(username)
     if user is None:
         return "Error: User does not exist!"
-
-    # if user.password != password:
-    #     return "Error: Password does not match!"
     
     if not bcrypt.checkpw(request.json.get("password").encode('utf-8'), user.password):
         return "Error: Password does not match!"        
