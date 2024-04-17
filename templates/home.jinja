@@ -121,11 +121,10 @@
             <div class="space"></div>
             Online users
             <section id="user_list"></section>
-            <section id="add_friend">
+            <section id="friend_request">
                 <p class="text">Send friend request:</p>
                 <input id="friend_name" class="box_size" placeholder="username">
                 <button onclick="addFriend()">Add</button>
-                {# <button id=" remove_friend_button">-</button> #}
             </section>
         </div>
         <div id="friend_boxes">
@@ -253,28 +252,54 @@
                 let childText = $(this).text();
                 //checks for duplicate requests.
                 if (childText.trim() === (friend.trim() + "Cancel")) {
-                    alert(`Request already sent to ${friend}.`);
+                    alert(`A friends request has already been sent to ${friend}.`);
                     matchFound = true;
                     return;
                 }
             });
             if (matchFound) {
-                return; // if duplicate request is made it stops it adding again.
+                console.log("duplicate request found. Exiting function call.")
+                return; // if duplicate request is true exit function
             }
             let child = $("<p style='color: black; margin: 0px; text-align: center;'></p>").text(friend);
             let button = $("<button>").text("Cancel");
             button.css("margin-left", "5px");
             child.append(button); // appends request to sent
             sent_box.append(child);
+            // Send friend request to the server
+            $.ajax({
+                type: "POST",
+                url: "/friend_request",
+                data: { friend: friend, username: "{{ username }}" },
+                success: function (response) {
+                    console.log("Friend request sent to server:", response);
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error sending friend request:", error);
+                }
+            });
 
             //cancels the friend request if cancel button is pushed.
             button.on("click", function () {
                 child.remove();
                 button.remove();
+                $.ajax({
+                    type: "POST",
+                    url: "/friend_request",
+                    data: { friend: friend, username: "{{ username }}" },
+                    success: function (response) {
+                        console.log("Friend request sent to server:", response);
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error sending friend request:", error);
+                    }
+                });
             });
         } else {
             alert("No user input, try again.")
         }
+
+
     }
 </script>
 {% endblock %}

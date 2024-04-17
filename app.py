@@ -84,6 +84,20 @@ def home():
     return render_template("home.jinja", username=request.args.get("username"))
 
 
+@app.route('/friend_request', methods=['POST'])
+def add_friend():
+    friend = request.form.get('friend')
+    sender = request.form.get('username')
+    db.friend_request(sender, friend) 
+    return ('Friend request sent successfully!')    
+
+@app.route('/delete_user/<int:user_id>', methods=['POST'])
+def delete_user(user_id):
+    user = User.query.get_or_404(user_id)
+    db.session.delete(sender, friend)
+    db.session.commit()
+    return redirect(url_for('index'))
+
 if __name__ == '__main__':
     ssl_cert = 'certs/info2222.crt'  # SSL certificate file
     ssl_key = 'certs/info2222.key'   # SSL private key file

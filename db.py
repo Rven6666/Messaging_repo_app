@@ -6,7 +6,7 @@ database file, containing all the logic to interface with the sql database
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from models import * 
-from models import FriendRequest
+# from models import FriendRequest
 from pathlib import Path
 
 # creates the database directory
@@ -33,8 +33,8 @@ def get_user(username: str):
     with Session(engine) as session:
         return session.get(User, username)
 
-def friendRequest(username: str, friend: str):
+def friend_request(sender: str, receiver: str):
     with Session(engine) as session:
-        request = FriendRequest(username,friend)
+        request = FriendRequest(sender=sender, receiver=receiver)
         session.add(request)
         session.commit()

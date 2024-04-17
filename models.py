@@ -69,9 +69,17 @@ class Room():
             return None
         return self.dict[user]
     
-# friend request table
 class FriendRequest(Base):
     __tablename__ = "friend_requests"
 
-    sender = Column(String, ForeignKey('user.username'),primary_key=True)
-    reciever = Column(String, ForeignKey('user.username'),primary_key=True)
+    sender = Column(String, ForeignKey('user.username'), primary_key=True)
+    receiver = Column(String, ForeignKey('user.username'), primary_key=True)
+
+
+#     # friend list table
+# class FriendList(Base):
+#     __tablename__ = "friend_list"
+
+#     sender = Column(String, ForeignKey('user.username'),primary_key=True)
+#     reciever = Column(String, ForeignKey('user.username'),primary_key=True)
+
