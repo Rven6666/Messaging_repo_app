@@ -116,7 +116,15 @@
             <section id="friend_list"></section>
             <div class="space"></div>
             Online users
-            <section id="user_list"></section>
+            <section id="user_list">
+                {% for user in connected_users %}
+                    <div class="user">
+                        <p>{{ user.username }}</p> <!-- Display the username -->
+                    </div>
+                {% else %}
+                    <p>No users are currently connected.</p>
+                {% endfor %}
+            </section>
             <section id="add_friend">
                 <p class="text">Add or Remove Friend:</p>
                 <input id="add_friend" class="box_size" placeholder="username">

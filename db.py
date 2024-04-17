@@ -3,7 +3,7 @@ db
 database file, containing all the logic to interface with the sql database
 '''
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, update
 from sqlalchemy.orm import Session
 from models import *
 
@@ -37,3 +37,28 @@ def insert_user(username: str, password: str):
 def get_user(username: str):
     with Session(engine) as session:
         return session.get(User, username)
+
+def update_conn(username, is_connected):
+    """
+    Update the user's connection status in the database.
+
+    Parameters:
+    username (str): The username of the user.
+    is_connected (bool): True if the user is connected, False otherwise.
+    """
+    with Session(engine) as session:
+        stmt = (
+        update(User).
+        where(User.username == username).
+        values(is_conn=is_connected)
+        )
+    session.execute(stmt)
+    session.commit()
+    print(f"conn_status updated for {username} to {is_connected}")
+    
+def get_conn_user():
+    with Session(engine) as session:
+        connected_users = session.query(User).filter(User.is_conn == True).all()
+        for user in connected_users:
+            print(f"Username: {user.username}, Connected: {user.is_conn}")
+        return connected_users

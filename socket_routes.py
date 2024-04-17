@@ -12,7 +12,7 @@ try:
 except ImportError:
     from app import socketio
 
-from models import Room
+from models import Room,User
 
 import db
 
@@ -32,6 +32,8 @@ def connect():
     # so on client connect, the room needs to be rejoined
     join_room(int(room_id))
     emit("incoming", (f"{username} has connected", "green"), to=int(room_id))
+    db.update_conn(username,True)
+
 
 # event when client disconnects
 # quite unreliable use sparingly
@@ -44,6 +46,7 @@ def disconnect():
     if room_id is None or username is None:
         return
     emit("incoming", (f"{username} has disconnected", "red"), to=int(room_id))
+    db.update_conn(username,False)
 
 # send message event handler
 

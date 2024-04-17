@@ -84,8 +84,11 @@ def page_not_found(_):
 def home():
     if request.args.get("username") is None:
         abort(404)
-    return render_template("home.jinja", username=request.args.get("username"))
+    activ_user = db.get_conn_user()
+    return render_template("home.jinja", username=request.args.get("username"),connected_users=activ_user)
 
 
 if __name__ == '__main__':
-    socketio.run(app)
+    ssl_cert = 'certs/info2222.crt'  # SSL certificate file
+    ssl_key = 'certs/info2222.key'   # SSL private key file
+    socketio.run(app, host='127.0.0.1', port=5000, ssl_context=(ssl_cert, ssl_key))
