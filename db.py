@@ -38,3 +38,14 @@ def friend_request(sender: str, receiver: str):
         request = FriendRequest(sender=sender, receiver=receiver)
         session.add(request)
         session.commit()
+
+def cancel_request(sender: str, receiver: str):
+    print('cancel fucntions')
+    with Session(engine) as session:
+        request_to_delete = session.query(FriendRequest).filter_by(sender=sender, receiver=receiver).first()
+        if request_to_delete:
+            session.delete(request_to_delete)
+            session.commit()
+            return 'Request deleted'
+        else:
+            return 'No matching friend request found'

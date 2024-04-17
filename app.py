@@ -91,12 +91,15 @@ def add_friend():
     db.friend_request(sender, friend) 
     return ('Friend request sent successfully!')    
 
-@app.route('/delete_user/<int:user_id>', methods=['POST'])
-def delete_user(user_id):
-    user = User.query.get_or_404(user_id)
-    db.session.delete(sender, friend)
-    db.session.commit()
-    return redirect(url_for('index'))
+
+@app.route('/delete_request', methods=['POST'])
+def delete_user():
+    friend = request.form.get('friend')
+    username = request.form.get('username')
+
+    db.cancel_request(username, friend)
+    return ('Request deleted successfully')   
+
 
 if __name__ == '__main__':
     ssl_cert = 'certs/info2222.crt'  # SSL certificate file

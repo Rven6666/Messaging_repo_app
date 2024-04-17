@@ -285,15 +285,16 @@
                 button.remove();
                 $.ajax({
                     type: "POST",
-                    url: "/friend_request",
+                    url: "/delete_request",
                     data: { friend: friend, username: "{{ username }}" },
                     success: function (response) {
-                        console.log("Friend request sent to server:", response);
+                        console.log("Request successfully deleted", response);
                     },
                     error: function (xhr, status, error) {
-                        console.error("Error sending friend request:", error);
+                        console.error("Error in deleting request", error);
                     }
                 });
+
             });
         } else {
             alert("No user input, try again.")
