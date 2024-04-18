@@ -11,7 +11,7 @@ or use SQLite, if you're not into fancy ORMs (but be mindful of Injection attack
 '''
 
 from sqlalchemy import String,Column,Boolean
-from sqlalchemy.orm import declarative_base, Mapped, column_property
+from sqlalchemy.orm import declarative_base, Mapped
 from typing import Dict
 
 
