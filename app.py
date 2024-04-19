@@ -81,7 +81,14 @@ def page_not_found(_):
 def home():
     if request.args.get("username") is None:
         abort(404)
-    return render_template("home.jinja", username=request.args.get("username"))
+
+    username = request.args.get("username")
+
+    matches = db.friends_received(username)
+    requests = db.show_friends_sent(username)
+
+    return render_template("home.jinja", username=username, 
+                           matches=matches, requests=requests)
 
 
 @app.route('/friend_request', methods=['POST'])
@@ -96,6 +103,9 @@ def add_friend():
 def delete_user():
     friend = request.form.get('friend')
     username = request.form.get('username')
+
+    print(friend)
+    print(username)
 
     db.cancel_request(username, friend)
     return ('Request deleted successfully')   

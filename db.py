@@ -49,3 +49,16 @@ def cancel_request(sender: str, receiver: str):
             return 'Request deleted'
         else:
             return 'No matching friend request found'
+
+def friends_received(username: str):
+    with Session(engine) as session:
+        results = session.query(FriendRequest.sender).filter_by(receiver=username).all()
+        return [row[0] for row in results]
+      
+def show_friends_sent(username: str):
+    with Session(engine) as session:
+        # Query to retrieve all rows where column_two matches column_one
+        requests = session.query(FriendRequest.receiver).filter(FriendRequest.sender == username).all()
+        # Extracting just the values from the tuples
+        return [row[0] for row in requests]
+

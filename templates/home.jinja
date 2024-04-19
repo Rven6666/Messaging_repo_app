@@ -138,6 +138,8 @@
 
 <script src="/static/js/libs/socket.io.min.js"></script>
 <script>
+
+
     let room_id = 0;
 
     // when the user presses the "Enter" key inside of the "message box", 
@@ -161,6 +163,23 @@
             addFriend();
         }
     })
+
+    //Remove eventlistener for the friends request system. - links to whole message box
+    $("#request_sent").on("click", ".cancel-button", function () {
+        let sender = "{{ username }}";
+        let button_name = $(this).data("friend-name");
+        $(this).parent().remove(); // Remove the parent <p> element
+        remove_request(sender, button_name);
+    });
+
+    //reject eventlistener for recieved friends requests. - links to whole message box
+    $("#request_recieved").on("click", ".reject-button", function () {
+        let currUser = "{{ username }}";
+        let requ_sender = $(this).data("curr_sender");
+        console.log(currUser, requ_sender);
+        $(this).parent().remove(); // Remove the parent <p> element
+        remove_request(requ_sender, currUser);
+    });
 
     $(document).ready(() => {
         // room_id is undefined if the user hasn't joined a room
@@ -240,7 +259,11 @@
         box.append(child);
     }
 
+
+
+    //Logic to add new friend request to database
     function addFriend() {
+        let sender = "{{ username }}";
         var friend = $("#friend_name").val();
         let matchFound = false;
         // Check if the input field is not empty
@@ -252,20 +275,17 @@
                 let childText = $(this).text();
                 //checks for duplicate requests.
                 if (childText.trim() === (friend.trim() + "Cancel")) {
-                    alert(`A friends request has already been sent to ${friend}.`);
                     matchFound = true;
                     return;
                 }
             });
             if (matchFound) {
+                alert(`A friends request has already been sent to ${friend}.`);
                 console.log("duplicate request found. Exiting function call.")
                 return; // if duplicate request is true exit function
             }
-            let child = $("<p style='color: black; margin: 0px; text-align: center;'></p>").text(friend);
-            let button = $("<button>").text("Cancel");
-            button.css("margin-left", "5px");
-            child.append(button); // appends request to sent
-            sent_box.append(child);
+            addUserRequest(sender, friend);
+
             // Send friend request to the server
             $.ajax({
                 type: "POST",
@@ -278,29 +298,92 @@
                     console.error("Error sending friend request:", error);
                 }
             });
-
-            //cancels the friend request if cancel button is pushed.
-            button.on("click", function () {
-                child.remove();
-                button.remove();
-                $.ajax({
-                    type: "POST",
-                    url: "/delete_request",
-                    data: { friend: friend, username: "{{ username }}" },
-                    success: function (response) {
-                        console.log("Request successfully deleted", response);
-                    },
-                    error: function (xhr, status, error) {
-                        console.error("Error in deleting request", error);
-                    }
-                });
-
-            });
         } else {
             alert("No user input, try again.")
         }
 
+    }
+
+
+    //Adds friends requests to friends request UI.
+    function addUserRequest(sender, friend) {
+        let sent_box = $("#request_sent");
+        let child = $("<p style='color: black; margin: 0px; text-align: right;'></p>").text(friend);
+        let cancel_button = $("<button>").text("Cancel").addClass("cancel-button").data("friend-name", friend);
+
+        cancel_button.css({
+            "margin-left": "5px",
+            "margin-top": "2px",
+            "margin-bottom": "2px",
+            "margin-right": "2px"
+        });
+
+        child.append(cancel_button);
+        sent_box.append(child);
 
     }
+
+
+    // Univerisal show user requests on any page reload/change of users
+    function show_requests_sent() {
+        let sender = "{{ username }}";
+        {% for request in requests %}
+        friend = "{{ request }}";
+        addUserRequest(sender, friend);
+        {% endfor %}
+    }
+
+    //removes friends sending and recieveing from database
+    function remove_request(sender, friend) {
+        // Remove child element and cancel_button
+        console.log("Sender:", sender)
+        console.log("Reciever", friend)
+
+        // Send AJAX request to delete the request from the server
+        $.ajax({
+            type: "POST",
+            url: "/delete_request",
+            data: { friend: friend, username: sender },
+            success: function (response) {
+                console.log("Request successfully deleted", response);
+            },
+            error: function (xhr, status, error) {
+                console.error("Error in deleting request", error);
+            }
+        });
+    }
+
+
+    function show_recieved() {
+        let receivedBox = $("#request_recieved");
+        let sender = "{{ username }}";
+        // Iterate over each sender in the matches list
+        {% for sender in matches %}
+        (function () { // Create a closure to capture the current values of child and rejectButton
+            let currentSender = "{{ sender }}"; // Extract the sender from the template
+            let currentChild = $("<p style='color: black; margin: 0px; text-align: right;'></p>").text(currentSender);
+            let RejectButton = $("<button>").text("x").addClass("reject-button").data("curr_sender", currentSender);
+            let AcceptButton = $("<button>").text("\u2714").addClass("accept-button").data("curr_sender", currentSender);
+
+            RejectButton.css, AcceptButton.css({
+                "margin-left": "5px",
+                "margin-top": "2px",
+                "margin-bottom": "2px",
+                "margin-right": "2px"
+            });
+
+            currentChild.append(AcceptButton);
+            currentChild.append(RejectButton);
+            receivedBox.append(currentChild);
+        })();
+        {% endfor %}
+    }
+
+    $(document).ready(function () {
+        // Call the function to load names and buttons
+        show_recieved();
+        show_requests_sent()
+    });
+
 </script>
 {% endblock %}
