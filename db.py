@@ -5,9 +5,8 @@ database file, containing all the logic to interface with the sql database
 
 from sqlalchemy import create_engine, update
 from sqlalchemy.orm import Session
-from models import *
-
-
+from models import * 
+from models import FriendRequest
 from pathlib import Path
 
 # creates the database directory
@@ -17,14 +16,12 @@ Path("database") \
 # "database/main.db" specifies the database file
 # change it if you wish
 # turn echo = True to display the sql output
-engine = create_engine("sqlite:///database/main.db", echo=True)
+engine = create_engine("sqlite:///database/main.db", echo=False)
 
 # initializes the database
 Base.metadata.create_all(engine)
 
 # inserts a user to the database
-
-
 def insert_user(username: str, password: str):
     with Session(engine) as session:
         user = User(username=username, password=password)
@@ -32,12 +29,11 @@ def insert_user(username: str, password: str):
         session.commit()
 
 # gets a user from the database
-
-
 def get_user(username: str):
     with Session(engine) as session:
         return session.get(User, username)
 
+<<<<<<< HEAD
 def update_conn(username, is_connected):
     """
     Update the user's connection status in the database.
@@ -73,3 +69,10 @@ def get_conn_user():
         for user in connected_users:
             print(f"Username: {user.username}, Connected: {user.is_conn}")
         return connected_users
+=======
+def friendRequest(username: str, friend: str):
+    with Session(engine) as session:
+        request = FriendRequest(username,friend)
+        session.add(request)
+        session.commit()
+>>>>>>> 650493faca13f9b30136316018c204b347763d08
