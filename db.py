@@ -40,7 +40,7 @@ def friend_request(sender: str, receiver: str):
         session.commit()
 
 def cancel_request(sender: str, receiver: str):
-    print('cancel fucntions')
+    print('cancel request function db')
     with Session(engine) as session:
         request_to_delete = session.query(FriendRequest).filter_by(sender=sender, receiver=receiver).first()
         if request_to_delete:
@@ -62,3 +62,26 @@ def show_friends_sent(username: str):
         # Extracting just the values from the tuples
         return [row[0] for row in requests]
 
+def friends(friend1: str, friend2: str):
+    with Session(engine) as session:
+        request = FriendList(friend1=friend1, friend2=friend2)
+        session.add(request)
+        session.commit()
+
+def remove_friends(user: str, friend: str):
+    print('remove friends fucntion db')
+    with Session(engine) as session:
+        relationship_delete = session.query(FriendList).filter_by(friend1=user, friend2=friend).first()
+        if relationship_delete:
+            session.delete(relationship_delete)
+            session.commit()
+            return 'Friend deleted'
+        else:
+            return 'No relationship found.'
+        
+def show_friends_list(username: str):
+    with Session(engine) as session:
+        # Query to retrieve all rows where column_two matches column_one
+        requests = session.query(FriendList.friend2).filter(FriendList.friend1 == username).all()
+        # Extracting just the values from the tuples
+        return [row[0] for row in requests]

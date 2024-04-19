@@ -10,7 +10,7 @@ Prisma docs also looks so much better in comparison
 or use SQLite, if you're not into fancy ORMs (but be mindful of Injection attacks :) )
 '''
 
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from typing import Dict
 
@@ -76,10 +76,15 @@ class FriendRequest(Base):
     receiver = Column(String, ForeignKey('user.username'), primary_key=True)
 
 
-#     # friend list table
-# class FriendList(Base):
-#     __tablename__ = "friend_list"
+    # friend list table
+class FriendList(Base):
+    __tablename__ = "friend_list"
 
-#     sender = Column(String, ForeignKey('user.username'),primary_key=True)
-#     reciever = Column(String, ForeignKey('user.username'),primary_key=True)
+    friend1 = Column(String, ForeignKey('user.username'),primary_key=True)
+    friend2 = Column(String, ForeignKey('user.username'),primary_key=True)
+       
+    # Makes sure each row is uniqure
+    __table_args__ = (
+        UniqueConstraint('friend1', 'friend2', name='unique_friend_row'),
+    )
 

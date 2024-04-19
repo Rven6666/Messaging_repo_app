@@ -86,9 +86,10 @@ def home():
 
     matches = db.friends_received(username)
     requests = db.show_friends_sent(username)
+    friends_list = db.show_friends_list(username)
 
     return render_template("home.jinja", username=username, 
-                           matches=matches, requests=requests)
+                           matches=matches, requests=requests, friendsList=friends_list)
 
 
 @app.route('/friend_request', methods=['POST'])
@@ -108,7 +109,22 @@ def delete_user():
     print(username)
 
     db.cancel_request(username, friend)
-    return ('Request deleted successfully')   
+    return ('Request deleted successfully')  
+
+@app.route('/friends_list', methods=['POST'])
+def friends():
+    friend1 = request.form.get('friend1')
+    friend2 = request.form.get('friend2')
+    db.friends(friend1, friend2) 
+    return ('Friend added!')    
+
+@app.route('/remove_friends', methods=['POST'])
+def remove_friends():
+    user = request.form.get('user')
+    friend = request.form.get('friend')
+    print(user, friend)
+    result = db.remove_friends(user, friend) 
+    return result   
 
 
 if __name__ == '__main__':

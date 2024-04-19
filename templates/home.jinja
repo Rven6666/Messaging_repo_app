@@ -176,10 +176,27 @@
     $("#request_recieved").on("click", ".reject-button", function () {
         let currUser = "{{ username }}";
         let requ_sender = $(this).data("curr_sender");
-        console.log(currUser, requ_sender);
         $(this).parent().remove(); // Remove the parent <p> element
         remove_request(requ_sender, currUser);
     });
+
+    //Accept eventlistener for Accept friends. - links to whole message box
+    $("#request_recieved").on("click", ".accept-button", function () {
+        let currUser = "{{ username }}";
+        let requ_sender = $(this).data("curr_sender");
+        $(this).parent().remove(); // Remove the parent <p> element
+        friends(currUser, requ_sender);
+    });
+
+    //Accept eventlistener for removing friends. - links to whole message box
+    $("#friend_list").on("click", ".remove_friend_button", function () {
+        let currUser = "{{ username }}";
+        let friend = $(this).data("friend-name");
+        console.log(currUser, friend);
+        $(this).parent().remove(); // Remove the parent <p> element
+        remove_friends(currUser, friend);
+    });
+
 
     $(document).ready(() => {
         // room_id is undefined if the user hasn't joined a room
@@ -258,8 +275,6 @@
         let child = $(`<p style="color:${color}; margin: 0px;"></p>`).text(message);
         box.append(child);
     }
-
-
 
     //Logic to add new friend request to database
     function addFriend() {
@@ -379,10 +394,92 @@
         {% endfor %}
     }
 
+
+    function friends(friend1, friend2) {
+        $.ajax({
+            type: "POST",
+            url: "/friends_list",
+            data: { friend1: friend1, friend2: friend2 },
+            success: function (response) {
+                console.log("Friend request sent to server:", response);
+            },
+            error: function (xhr, status, error) {
+                console.error("Error sending friend request:", error);
+            }
+        });
+        remove_request(friend2, friend1);
+        append_new_friend(friend2);
+
+    }
+
+    function append_new_friend(newFriend) {
+        let sent_box = $("#friend_list");
+        let child = $("<p style='color: black; margin: 0px; text-align: right;'></p>").text(newFriend);
+        let removeFriendButton = $("<button>").text("x").addClass("remove_friend_button").data("friend-name", newFriend);
+
+        removeFriendButton.css({
+            "margin-left": "5px",
+            "margin-top": "2px",
+            "margin-bottom": "2px",
+            "margin-right": "2px"
+        });
+
+        child.append(removeFriendButton);
+        sent_box.append(child);
+
+    }
+
+    function show_all_friends() {
+        let friend_box = $("#friend_list");
+        let friend = "null";
+
+        // Iterate over each relation in the friendsList
+        {% for relation in friendsList %}
+        friend = "{{ relation }}";
+        console.log(friend);
+
+        (function () {
+            // Create a closure to capture the current value of friend
+            let child = $("<p style='color: black; margin: 0px; text-align: right;'></p>").text(friend);
+            let removeFriendButton = $("<button>").text("x").addClass("remove_friend_button").data("friend-name", friend);
+
+            removeFriendButton.css({
+                "margin-left": "5px",
+                "margin-top": "2px",
+                "margin-bottom": "2px",
+                "margin-right": "2px"
+            });
+
+            // Append the removeFriendButton to the child element
+            child.append(removeFriendButton);
+
+            // Append the child element to the friend_box
+            friend_box.append(child);
+        })();
+        {% endfor %}
+    }
+
+    function remove_friends(user, friend) {
+        // Send AJAX request to delete the request from the server
+        $.ajax({
+            type: "POST",
+            url: "/remove_friends",
+            data: { user: user, friend: friend },
+            success: function (response) {
+                console.log("Friend successfully removed", response);
+            },
+            error: function (xhr, status, error) {
+                console.error("Error in deleting friend", error);
+            }
+        });
+
+    }
+
     $(document).ready(function () {
         // Call the function to load names and buttons
         show_recieved();
         show_requests_sent()
+        show_all_friends();
     });
 
 </script>
