@@ -38,6 +38,24 @@ def get_user(username: str):
     with Session(engine) as session:
         return session.get(User, username)
 
+def get_conn_user():
+    """
+    Retrieve a list of connected users from the database.
+
+    This function establishes a session with the provided SQLAlchemy engine,
+    queries the 'User' table for users who are currently connected,
+    and prints their usernames and connection status. It then returns
+    a list of User objects representing the connected users.
+
+    Returns:
+        list: A list of User objects representing connected users.
+    """
+    with Session(engine) as session:
+        connected_users = session.query(User).filter(User.is_conn == True).all()
+        for user in connected_users:
+            print(f"Username: {user.username}, Connected: {user.is_conn}")
+        return connected_users
+
 def update_conn(username, is_connected):
     """
     Update the user's connection status in the database.
@@ -56,9 +74,3 @@ def update_conn(username, is_connected):
     session.commit()
     print(f"conn_status updated for {username} to {is_connected}")
     
-def get_conn_user():
-    with Session(engine) as session:
-        connected_users = session.query(User).filter(User.is_conn == True).all()
-        for user in connected_users:
-            print(f"Username: {user.username}, Connected: {user.is_conn}")
-        return connected_users

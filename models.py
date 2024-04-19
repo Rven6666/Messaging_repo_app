@@ -11,13 +11,14 @@ or use SQLite, if you're not into fancy ORMs (but be mindful of Injection attack
 '''
 
 from sqlalchemy import String,Column,Boolean
+# modified declarative_base import
 from sqlalchemy.orm import declarative_base, Mapped
 from typing import Dict
 
 
 # data models
 
-Base = declarative_base() # Corrected usage here
+Base = declarative_base() # modified usage here
 
 
 # model to store user information
@@ -31,7 +32,8 @@ class User(Base):
     # and I want this column to be my primary key
     # then accessing john.username -> will give me some data of type string
     # in other words we've mapped the username Python object property to an SQL column of type String
-    username: Mapped[str] = Column(String, primary_key=True) # Corrected column definition
+    # Mod: changed column definition to remove error on column establishment
+    username: Mapped[str] = Column(String, primary_key=True) 
     password: Mapped[str] = Column(String)
     is_conn: Mapped[bool] = Column(Boolean)
 
