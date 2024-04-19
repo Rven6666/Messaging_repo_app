@@ -33,25 +33,6 @@ def get_user(username: str):
     with Session(engine) as session:
         return session.get(User, username)
 
-<<<<<<< HEAD
-def update_conn(username, is_connected):
-    """
-    Update the user's connection status in the database.
-
-    Parameters:
-    username (str): The username of the user.
-    is_connected (bool): True if the user is connected, False otherwise.
-    """
-    with Session(engine) as session:
-        stmt = (
-        update(User).
-        where(User.username == username).
-        values(is_conn=is_connected)
-        )
-    session.execute(stmt)
-    session.commit()
-    print(f"conn_status updated for {username} to {is_connected}")
-    
 def get_conn_user():
     """
     Retrieve a list of connected users from the database.
@@ -69,10 +50,27 @@ def get_conn_user():
         for user in connected_users:
             print(f"Username: {user.username}, Connected: {user.is_conn}")
         return connected_users
-=======
+
+def update_conn(username, is_connected):
+    """
+    Update the user's connection status in the database.
+
+    Parameters:
+    username (str): The username of the user.
+    is_connected (bool): True if the user is connected, False otherwise.
+    """
+    with Session(engine) as session:
+        stmt = (
+        update(User).
+        where(User.username == username).
+        values(is_conn=is_connected)
+        )
+    session.execute(stmt)
+    session.commit()
+    print(f"conn_status updated for {username} to {is_connected}")
+
 def friendRequest(username: str, friend: str):
     with Session(engine) as session:
         request = FriendRequest(username,friend)
         session.add(request)
         session.commit()
->>>>>>> 650493faca13f9b30136316018c204b347763d08
