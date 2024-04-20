@@ -81,7 +81,17 @@ def remove_friends(user: str, friend: str):
         
 def show_friends_list(username: str):
     with Session(engine) as session:
-        # Query to retrieve all rows where column_two matches column_one
-        requests = session.query(FriendList.friend2).filter(FriendList.friend1 == username).all()
-        # Extracting just the values from the tuples
-        return [row[0] for row in requests]
+        # friendships column 1
+        column1 = session.query(FriendList.friend2).filter(FriendList.friend1 == username).all()
+
+        # friendships column 2
+        column2 = session.query(FriendList.friend1).filter(FriendList.friend2 == username).all()
+
+        # Get just the values 
+        friendships_column1 = [row[0] for row in column1]
+        friendships_column2 = [row[0] for row in column2]
+
+        # Combine both lists to get all friendships
+        return friendships_column1 + friendships_column2
+
+

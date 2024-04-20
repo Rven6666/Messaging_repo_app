@@ -106,7 +106,7 @@
                 <input id="receiver" placeholder="username">
                 <!-- MDN says its bad practice to use the onclick attribute,
         but we're using it anyways coz its easy :)-->
-                <button onclick="join_room()">Chat</button>
+                <button onclick="get_val_joinRoom()">Chat</button>
             </section>
             <section id="input_box" style="display: none">
                 <p class="text">Message: </p>
@@ -154,7 +154,7 @@
     // the user joins a (socket) room
     $("#receiver").on("keyup", (e) => {
         if (e.key == "Enter") {
-            join_room();
+            get_val_joinRoom();
         }
     })
 
@@ -163,6 +163,7 @@
             addFriend();
         }
     })
+
 
     //Remove eventlistener for the friends request system. - links to whole message box
     $("#request_sent").on("click", ".cancel-button", function () {
@@ -196,6 +197,16 @@
         $(this).parent().remove(); // Remove the parent <p> element
         remove_friends(currUser, friend);
     });
+
+
+    //Accept eventlistener for removing friends. - links to whole message box
+    $("#friend_list").on("click", ".join_chat_button", function () {
+        // Call the join_room() function when the button is clicked
+        var name = $(this).data("friend-name")
+        console.log("event dheck accept", $(this).data("friend-name"))
+        join_room(name);
+    });
+
 
 
     $(document).ready(() => {
@@ -233,14 +244,18 @@
         socket.emit("send", username, message, room_id);
     }
 
-    // we emit a join room event to the server to join a room
-    function join_room() {
-
+    function get_val_joinRoom() {
         let receiver = $("#receiver").val();
+        console.log("get val", receiver)
+        join_room(receiver)
+    }
+
+    // we emit a join room event to the server to join a room
+    function join_room(reciv) {
 
         // pass in the receiver of our message to the server
         // as well as the current user's username
-        socket.emit("join", username, receiver, (res) => {
+        socket.emit("join", username, reciv, (res) => {
             // res is a string with the error message if the error occurs
             // this is a pretty bad way of doing error handling, but watevs
             if (typeof res != "number") {
@@ -258,6 +273,7 @@
         });
 
     }
+
 
     // function when the user clicks on "Leave Room"
     // emits a "leave" event, telling the server that we want to leave the room
@@ -292,13 +308,26 @@
                 if (childText.trim() === (friend.trim() + "Cancel")) {
                     matchFound = true;
                     return;
+                } else if (sender == friend) {
+                    matchFound = true;
+                    return;
                 }
             });
+
+
             if (matchFound) {
-                alert(`A friends request has already been sent to ${friend}.`);
+                alert(`Invalid selection - try again.`);
                 console.log("duplicate request found. Exiting function call.")
                 return; // if duplicate request is true exit function
             }
+
+            /* - fix - stop reqursts being sent if friends - see
+            if (check_friends(sender, friend)) {
+                alert(" You are already friends");
+                return;
+            }
+            */
+
             addUserRequest(sender, friend);
 
             // Send friend request to the server
@@ -416,14 +445,22 @@
         let sent_box = $("#friend_list");
         let child = $("<p style='color: black; margin: 0px; text-align: right;'></p>").text(newFriend);
         let removeFriendButton = $("<button>").text("x").addClass("remove_friend_button").data("friend-name", newFriend);
+        let joinChatButton = $("<button>").text("Chat").addClass("join_chat_button").data("friend-name", newFriend);
 
-        removeFriendButton.css({
+        // Define a CSS class
+        let buttonStyle = {
             "margin-left": "5px",
             "margin-top": "2px",
             "margin-bottom": "2px",
             "margin-right": "2px"
-        });
+        };
 
+        // Apply the CSS class to both buttons
+        removeFriendButton.css(buttonStyle);
+        joinChatButton.css(buttonStyle);
+
+        child.append(joinChatButton);
+        // Append the removeFriendButton to the child element
         child.append(removeFriendButton);
         sent_box.append(child);
 
@@ -436,20 +473,27 @@
         // Iterate over each relation in the friendsList
         {% for relation in friendsList %}
         friend = "{{ relation }}";
-        console.log(friend);
+        console.log("showing freinds", friend.trim());
 
         (function () {
             // Create a closure to capture the current value of friend
             let child = $("<p style='color: black; margin: 0px; text-align: right;'></p>").text(friend);
             let removeFriendButton = $("<button>").text("x").addClass("remove_friend_button").data("friend-name", friend);
+            let joinChatButton = $("<button>").text("Chat").addClass("join_chat_button").data("friend-name", friend);
 
-            removeFriendButton.css({
+            // Define a CSS class
+            let buttonStyle = {
                 "margin-left": "5px",
                 "margin-top": "2px",
                 "margin-bottom": "2px",
                 "margin-right": "2px"
-            });
+            };
 
+            // Apply the CSS class to both buttons
+            removeFriendButton.css(buttonStyle);
+            joinChatButton.css(buttonStyle);
+
+            child.append(joinChatButton);
             // Append the removeFriendButton to the child element
             child.append(removeFriendButton);
 
@@ -474,6 +518,26 @@
         });
 
     }
+
+    /* got to fix if freinds - cannot send friends request
+        function check_friends(sender, friend) {
+            let friend1 = "null"
+            let friend2 = "null"
+            console.log("CHECKSDA")
+    
+            {% for friends in friendsList %}
+            friend1 = "{{ friends[0] }}";
+            friend2 = "{{ friends[1] }}";
+            console.log("f1", friend1)
+            console.log("f2", friend2)
+            if ((friend1 === sender && friend2 === friend) || (friend2 === sender && friend1 === friend)) {
+                return true;
+            }
+            {% endfor %}
+            return false;
+        }
+        */
+
 
     $(document).ready(function () {
         // Call the function to load names and buttons
