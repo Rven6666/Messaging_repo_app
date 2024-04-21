@@ -10,6 +10,8 @@ Sign up page, pretty much the same as login.
     <input id="username"/>
     <p>Password</p>
     <input id="password" type="password"/>
+    <!-- CSRF Token -->
+    <input type="hidden" id="csrf_token" name="csrf_token" value="{{ csrf_token() }}"/>
     <button onclick="signup()">Sign up</button>
 
     <script>
@@ -26,9 +28,13 @@ Sign up page, pretty much the same as login.
         // this function is identical to login(), see login.jinja
         async function signup() {
             let loginURL = "{{ url_for('signup_user') }}";
+            let csrf_token = document.getElementById('csrf_token').value;
             let res = await axios.post(loginURL, {
                 username: $("#username").val(),
                 password: $("#password").val()
+            },{headers: {
+                'X-CSRFToken': csrf_token
+                }
             });
             if (!isValidURL(res.data)) {
                 alert(res.data);

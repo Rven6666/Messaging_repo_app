@@ -5,7 +5,8 @@ file containing all the routes related to socket.io
 
 
 from flask_socketio import join_room, emit, leave_room
-from flask import request
+from flask_login import current_user, logout_user
+from flask import request, session
 
 try:
     from __main__ import socketio
@@ -21,18 +22,32 @@ room = Room()
 # when the client connects to a socket
 # this event is emitted when the io() function is called in JS
 
+import logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
 
 @socketio.on('connect')
-def connect():
+def connect(auth=None):
     username = request.cookies.get("username")
     room_id = request.cookies.get("room_id")
+    logger.debug(f"User {username} is authenticated: %s", current_user.is_authenticated)
+    db.update_conn(username,True)
+    update_and_emit_user_stats()
+    if not current_user.is_authenticated:
+        db.update_conn(username,False)
+        update_and_emit_user_stats()
+        logger.debug(f"User {username} is made unauthorized.")
+        return 'Unauthorized!'
+    
     if room_id is None or username is None:
+        logger.debug("Missing room_id or username. room_id: %s, username: %s", room_id, username)
         return
     # socket automatically leaves a room on client disconnect
     # so on client connect, the room needs to be rejoined
+    print(f"{username} has re-connected to {room_id}")
     join_room(int(room_id))
     emit("incoming", (f"{username} has connected", "green"), to=int(room_id))
-    db.update_conn(username,True)
 
 
 # event when client disconnects
@@ -43,10 +58,14 @@ def connect():
 def disconnect():
     username = request.cookies.get("username")
     room_id = request.cookies.get("room_id")
+    db.update_conn(username,False)
+    update_and_emit_user_stats()
+    logout_user()
+    session.pop(room_id, None)
     if room_id is None or username is None:
         return
     emit("incoming", (f"{username} has disconnected", "red"), to=int(room_id))
-    db.update_conn(username,False)
+    
 
 # send message event handler
 
@@ -102,3 +121,7 @@ def leave(username, room_id):
     emit("incoming", (f"{username} has left the room.", "red"), to=room_id)
     leave_room(room_id)
     room.leave_room(username)
+
+def update_and_emit_user_stats():
+    connected_users = db.get_conn_user()
+    emit('update_user_stats', {'connected_users': [user.username for user in connected_users]}, broadcast=True)

@@ -19,7 +19,7 @@ from typing import Dict
 
 # data models
 
-Base = declarative_base() # Modified usage here
+Base = declarative_base()
 
 
 # model to store user information
@@ -31,12 +31,26 @@ class User(Base):
     # and I want this column to be my primary key
     # then accessing john.username -> will give me some data of type string
     # in other words we've mapped the username Python object property to an SQL column of type String
-
+    
     username: Mapped[str] = Column(String, primary_key=True) 
     password: Mapped[str] = Column(String)
-    is_conn: Mapped[bool] = Column(Boolean)
+    is_conn: Mapped[bool] = Column(Boolean, default=True)
     privateKey: Mapped[int] = mapped_column(Integer)
+    
+    @property
+    def is_authenticated(self):
+        return True
 
+    @property
+    def is_active(self):
+        return True
+
+    @property
+    def is_anonymous(self):
+        return False
+
+    def get_id(self):
+        return self.username
 
 
 # stateful counter used to generate the room id

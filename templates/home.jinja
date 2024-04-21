@@ -119,10 +119,15 @@
             Friends List:
             <section id="friend_list"></section>
             <div class="space"></div>
-            Online Users:
-            <section id="user_list"></section>
-            <!--Friends request button--->
-            <section id="friend_request">
+            Online users
+            <section id="user_list">
+                {% for user in connected_users %}
+                    <div class="user">
+                        <p>{{ user.username }}</p> <!-- Display the username -->
+                    </div>
+                {% endfor %}
+            </section>
+            <section id="add_friend">
                 <p class="text">Send friend request:</p>
                 <input id="friend_name" class="box_size" placeholder="username">
                 <button onclick="addFriend()">Add</button>
@@ -650,5 +655,16 @@
         show_online()
     });
 
+    socket.on('update_user_stats', function(data) {
+        // Clear existing contents of the user list.
+        $('#user_list').empty();
+    
+        // Iterate over the 'connected_users' array received from the server and create a new div element for each user to be appended.
+        data.connected_users.forEach(function(user) {
+            var userDiv = $('<div class="user"><p></p></div>');
+            userDiv.find('p').text(user); // Set the username in the paragraph within the div.
+            $('#user_list').append(userDiv); // Append the whole div element to #user_list section.
+        });
+    });
 </script>
 {% endblock %}
