@@ -6,7 +6,6 @@ database file, containing all the logic to interface with the sql database
 from sqlalchemy import create_engine, update
 from sqlalchemy.orm import Session
 from models import * 
-# from models import FriendRequest
 from pathlib import Path
 import random
 import sympy
@@ -36,7 +35,6 @@ def get_user(username: str):
     with Session(engine) as session:
         return session.get(User, username)
 
-<<<<<<< HEAD
 def get_conn_user():
     """
     Retrieve a list of connected users from the database.
@@ -73,10 +71,9 @@ def update_conn(username, is_connected):
     session.commit()
     print(f"conn_status updated for {username} to {is_connected}")
 
-def friendRequest(username: str, friend: str):
-=======
+
+#sents friend reqursts
 def friend_request(sender: str, receiver: str):
->>>>>>> friend_requests
     with Session(engine) as session:
         request = FriendRequest(sender=sender, receiver=receiver)
         session.add(request)

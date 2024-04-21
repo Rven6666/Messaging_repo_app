@@ -10,14 +10,10 @@ Prisma docs also looks so much better in comparison
 or use SQLite, if you're not into fancy ORMs (but be mindful of Injection attacks :) )
 '''
 
-<<<<<<< HEAD
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey,Boolean
-# modified import of 'declarative base'
-from sqlalchemy.orm import declarative_base, Mapped
-=======
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, UniqueConstraint
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
->>>>>>> friend_requests
+# modified import of 'declarative base'
+from sqlalchemy.orm import declarative_base, Mapped, mapped_column
+
 from typing import Dict
 
 
@@ -35,17 +31,12 @@ class User(Base):
     # and I want this column to be my primary key
     # then accessing john.username -> will give me some data of type string
     # in other words we've mapped the username Python object property to an SQL column of type String
-<<<<<<< HEAD
-    
-    # CHANGE: modifiedd column definition so that new column can be added without creating issue
+
     username: Mapped[str] = Column(String, primary_key=True) 
     password: Mapped[str] = Column(String)
     is_conn: Mapped[bool] = Column(Boolean)
-=======
-    username: Mapped[str] = mapped_column(String, primary_key=True)
-    password: Mapped[str] = mapped_column(String)
     privateKey: Mapped[int] = mapped_column(Integer)
->>>>>>> friend_requests
+
 
 
 # stateful counter used to generate the room id

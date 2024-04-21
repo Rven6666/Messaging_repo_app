@@ -116,25 +116,19 @@
             </section>
         </div>
         <div id="user_boxes">
-            Friends list
+            Friends List:
             <section id="friend_list"></section>
             <div class="space"></div>
-            Online users
-            <section id="user_list">
-                {% for user in connected_users %}
-                <div class="user">
-                    <p>{{ user.username }}</p> <!-- Display the username -->
-                </div>
-                {% else %}
-                <p>No users are currently connected.</p>
-                {% endfor %}
-            </section>
+            Online Users:
+            <section id="user_list"></section>
+            <!--Friends request button--->
             <section id="friend_request">
                 <p class="text">Send friend request:</p>
                 <input id="friend_name" class="box_size" placeholder="username">
                 <button onclick="addFriend()">Add</button>
             </section>
         </div>
+        <!--Friends request boxes--->
         <div id="friend_boxes">
             Requests sent to:
             <section id="request_sent"></section>
@@ -304,37 +298,53 @@
     function addFriend() {
         let sender = "{{ username }}";
         var friend = $("#friend_name").val();
-        let matchFound = false;
+        let sent_matchFound = false;
+        let friendsAlready = false;
         // Check if the input field is not empty
         if (friend.trim() !== "") {
             let sent_box = $("#request_sent");
+            let friend_box = $("#friend_list");
 
-            // Iterate over each child element in sent_box
+            // CEHKS IF FRIENDS REQUEST HAS BEEN SENT 
             sent_box.children('p').each(function () {
-                let childText = $(this).text();
+                let ele_text = $(this).text();
                 //checks for duplicate requests.
-                if (childText.trim() === (friend.trim() + "Cancel")) {
-                    matchFound = true;
+                console.log(ele_text, friend.trim())
+                if (ele_text.trim() === (friend.trim() + "Cancel")) {
+                    sent_matchFound = true;
                     return;
-                } else if (sender == friend) {
-                    matchFound = true;
+                } else {
+                    console.log("no duplicate freind requests found")
+                    sent_matchFound = false;
+                }
+            });
+
+            // CHECKS IF FRIENDS ALREADY BEFORE REQUEST
+            friend_box.children('p').each(function () {
+                let frien_ele_text = $(this).text();
+                //checks for duplicate requests.
+                console.log(frien_ele_text, friend.trim())
+                if (frien_ele_text.trim() === (friend.trim() + "Chatx")) {
+                    friendsAlready = true;
                     return;
+                } else {
+                    console.log("no duplicate freind requests found")
+                    friendsAlready = false;
                 }
             });
 
 
-            if (matchFound) {
+            if (sent_matchFound) {
                 alert(`Invalid selection - try again.`);
                 console.log("duplicate request found. Exiting function call.")
                 return; // if duplicate request is true exit function
             }
-
-            /* - fix - stop reqursts being sent if friends - see
-            if (check_friends(sender, friend)) {
-                alert(" You are already friends");
-                return;
+            if (friendsAlready) {
+                alert(`You are already friends.`);
+                console.log("request failed, already friends.")
+                return; // if duplicate request is true exit function
             }
-            */
+
 
             addUserRequest(sender, friend);
 
@@ -353,7 +363,8 @@
         } else {
             alert("No user input, try again.")
         }
-
+        matchFound = false;
+        friendsAlready = false;
     }
 
 
@@ -411,7 +422,7 @@
         let sender = "{{ username }}";
         // Iterate over each sender in the matches list
         {% for sender in matches %}
-        (function () { // Create a closure to capture the current values of child and rejectButton
+        (function () { // enclosure for values
             let currentSender = "{{ sender }}"; // Extract the sender from the template
             let currentChild = $("<p style='color: black; margin: 0px; text-align: right;'></p>").text(currentSender);
             let RejectButton = $("<button>").text("x").addClass("reject-button").data("curr_sender", currentSender);
@@ -527,31 +538,116 @@
 
     }
 
-    /* got to fix if freinds - cannot send friends request
-        function check_friends(sender, friend) {
-            let friend1 = "null"
-            let friend2 = "null"
-            console.log("CHECKSDA")
-    
-            {% for friends in friendsList %}
-            friend1 = "{{ friends[0] }}";
-            friend2 = "{{ friends[1] }}";
-            console.log("f1", friend1)
-            console.log("f2", friend2)
-            if ((friend1 === sender && friend2 === friend) || (friend2 === sender && friend1 === friend)) {
-                return true;
-            }
-            {% endfor %}
-            return false;
-        }
-        */
+    function show_online() {
+        let sender = "{{ username }}";
+        let online_box = $("#user_list");
+        let friend = "null";
+        let sent_matchFound = false;
+        let friendsAlready = false;
 
+        // Iterate over each relation in the friendsList
+        {% for user in connected_users %}
+        friend = "{{ user.username }}"
+        console.log("showing online users", friend.trim());
+
+        (function () {
+            // Create a closure to capture the current value of friend
+            let child = $("<p style='color: black; margin: 0px; text-align: right;'></p>").text(friend);
+            let send_request = $("<button>").text("Add").addClass("online_friend_request").data("friend-name", friend);
+
+            // Define a CSS class
+            let buttonStyle = {
+                "margin-left": "5px",
+                "margin-top": "2px",
+                "margin-bottom": "2px",
+                "margin-right": "2px"
+            };
+
+            // Apply the CSS class to both buttons
+            send_request.css(buttonStyle);
+
+            child.append(send_request);
+            // Append the send_request to the child element
+            child.append(send_request);
+
+            // Append the child element to the online_box
+            online_box.append(child);
+
+            // Attach click event listener to the button
+            send_request.on("click", function () {
+                let sent_box = $("#request_sent");
+                let friend_box = $("#friend_list");
+
+                // CEHKS IF FRIENDS REQUEST HAS BEEN SENT 
+                sent_box.children('p').each(function () {
+                    let ele_text = $(this).text();
+                    //checks for duplicate requests.
+                    console.log(ele_text, friend.trim())
+                    if (ele_text.trim() === (friend.trim() + "Cancel")) {
+                        sent_matchFound = true;
+                        return;
+                    } else {
+                        console.log("no duplicate freind requests found")
+                        sent_matchFound = false;
+                    }
+                });
+
+                // CHECKS IF FRIENDS ALREADY BEFORE REQUEST
+                friend_box.children('p').each(function () {
+                    let frien_ele_text = $(this).text();
+                    //checks for duplicate requests.
+                    console.log(frien_ele_text, friend.trim())
+                    if (frien_ele_text.trim() === (friend.trim() + "Chatx")) {
+                        friendsAlready = true;
+                        return;
+                    } else {
+                        console.log("no duplicate freind requests found")
+                        friendsAlready = false;
+                    }
+                });
+
+
+                if (sent_matchFound) {
+                    alert(`Invalid selection - try again.`);
+                    console.log("duplicate request found. Exiting function call.")
+                    return; // if duplicate request is true exit function
+                }
+                if (friendsAlready) {
+                    alert(`You are already friends.`);
+                    console.log("request failed, already friends.")
+                    return; // if duplicate request is true exit function
+                }
+
+
+                addUserRequest(sender, friend);
+
+                // Send friend request to the server
+                $.ajax({
+                    type: "POST",
+                    url: "/friend_request",
+                    data: { friend: friend, username: "{{ username }}" },
+                    success: function (response) {
+                        console.log("Friend request sent to server:", response);
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error sending friend request:", error);
+                    }
+                });
+            });
+
+
+        })(friend);
+
+
+        {% endfor %}
+    }
 
     $(document).ready(function () {
         // Call the function to load names and buttons
         show_recieved();
         show_requests_sent()
         show_all_friends();
+        show_online()
     });
 
 </script>

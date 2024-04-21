@@ -85,10 +85,7 @@ def page_not_found(_):
 def home():
     if request.args.get("username") is None:
         abort(404)
-<<<<<<< HEAD
     activ_user = db.get_conn_user()
-    return render_template("home.jinja", username=request.args.get("username"),connected_users=activ_user)
-=======
 
     username = request.args.get("username")
 
@@ -96,7 +93,7 @@ def home():
     requests = db.show_friends_sent(username)
     friends_list = db.show_friends_list(username)
 
-    return render_template("home.jinja", username=username, 
+    return render_template("home.jinja", username=username,connected_users=activ_user, 
                            matches=matches, requests=requests, friendsList=friends_list)
 
 
@@ -134,8 +131,6 @@ def remove_friends():
     print(user, friend)
     result = db.remove_friends(user, friend) 
     return result   
->>>>>>> friend_requests
-
 
 if __name__ == '__main__':
     ssl_cert = 'certs/info2222.crt'  # SSL certificate file
