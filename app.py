@@ -10,6 +10,7 @@ from flask import Flask, render_template, request, abort, url_for
 from flask_socketio import SocketIO
 import db
 import secrets
+import encyrption
 
 # import logging
 
@@ -61,13 +62,16 @@ def signup():
 # handles a post request when the user clicks the signup button
 @app.route("/signup/user", methods=["POST"])
 def signup_user():
+    bits = 10,
     if not request.is_json:
         abort(404)
     username = request.json.get("username")
     password = bcrypt.hashpw(request.json.get("password").encode('utf-8'), bcrypt.gensalt())
+    privateKey = encyrption.privateKey(bits[0])
+    print(privateKey)
 
     if db.get_user(username) is None:
-        db.insert_user(username, password)
+        db.insert_user(username, password, privateKey)
         return url_for('home', username=username)
     return "Error: User already exists!"
 
@@ -92,6 +96,9 @@ def home():
                            matches=matches, requests=requests, friendsList=friends_list)
 
 
+# all functions for friends and requests:
+
+#function to send friends reqursts
 @app.route('/friend_request', methods=['POST'])
 def add_friend():
     friend = request.form.get('friend')
@@ -99,18 +106,15 @@ def add_friend():
     db.friend_request(sender, friend) 
     return ('Friend request sent successfully!')    
 
-
+#cancel a friends request
 @app.route('/delete_request', methods=['POST'])
 def delete_user():
     friend = request.form.get('friend')
     username = request.form.get('username')
-
-    print(friend)
-    print(username)
-
     db.cancel_request(username, friend)
     return ('Request deleted successfully')  
 
+#show friends
 @app.route('/friends_list', methods=['POST'])
 def friends():
     friend1 = request.form.get('friend1')
@@ -118,6 +122,7 @@ def friends():
     db.friends(friend1, friend2) 
     return ('Friend added!')    
 
+#remove friends 
 @app.route('/remove_friends', methods=['POST'])
 def remove_friends():
     user = request.form.get('user')

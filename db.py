@@ -8,6 +8,9 @@ from sqlalchemy.orm import Session
 from models import * 
 # from models import FriendRequest
 from pathlib import Path
+import random
+import sympy
+import bcrypt
 
 # creates the database directory
 Path("database") \
@@ -22,9 +25,9 @@ engine = create_engine("sqlite:///database/main.db", echo=False)
 Base.metadata.create_all(engine)
 
 # inserts a user to the database
-def insert_user(username: str, password: str):
+def insert_user(username: str, password: str, privateKey: int):
     with Session(engine) as session:
-        user = User(username=username, password=password)
+        user = User(username=username, password=password, privateKey=privateKey)
         session.add(user)
         session.commit()
 
@@ -87,11 +90,10 @@ def show_friends_list(username: str):
         # friendships column 2
         column2 = session.query(FriendList.friend1).filter(FriendList.friend2 == username).all()
 
-        # Get just the values 
+        # compare and match for each column
         friendships_column1 = [row[0] for row in column1]
         friendships_column2 = [row[0] for row in column2]
 
-        # Combine both lists to get all friendships
+        # Combine both lists to cover duplicate realtionships
         return friendships_column1 + friendships_column2
-
 
