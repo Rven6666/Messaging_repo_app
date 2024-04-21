@@ -282,5 +282,16 @@
             alert("No user input, try again.")
         }
     }
+    socket.on('update_user_stats', function(data) {
+        // Clear existing contents of the user list.
+        $('#user_list').empty();
+    
+        // Iterate over the 'connected_users' array received from the server and create a new div element for each user to be appended.
+        data.connected_users.forEach(function(user) {
+            var userDiv = $('<div class="user"><p></p></div>');
+            userDiv.find('p').text(user); // Set the username in the paragraph within the div.
+            $('#user_list').append(userDiv); // Append the whole div element to #user_list section.
+        });
+    });
 </script>
 {% endblock %}
