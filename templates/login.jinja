@@ -10,6 +10,8 @@
     <input id="username"/>
     <p>Password</p>
     <input id="password"  type="password"/>
+    <!-- CSRF token -->
+    <input type="hidden" id="csrf_token" name="csrf_token" value="{{ csrf_token() }}"/>
     <button onclick="login()">Login</button>
 
     <script>
@@ -37,11 +39,16 @@
             // gives us -> "http://blabla/login/user"
             let loginURL = "{{ url_for('login_user') }}";
 
+            let csrf_token = document.getElementById('csrf_token').value; //Get CSRF token
+
             // axios post is a fancy way of posting a request to the server,
             // we pass in the username and password here
             let res = await axios.post(loginURL, {
                 username: $("#username").val(),
                 password: $("#password").val()
+            },{headers: {
+                'X-CSRFToken': csrf_token
+                }
             });
 
             // if the server sends in an error message, alert() the error message
