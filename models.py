@@ -10,9 +10,14 @@ Prisma docs also looks so much better in comparison
 or use SQLite, if you're not into fancy ORMs (but be mindful of Injection attacks :) )
 '''
 
+<<<<<<< HEAD
 from sqlalchemy import Column, Integer, String, Boolean, ForeignKey,Boolean
 # modified import of 'declarative base'
 from sqlalchemy.orm import declarative_base, Mapped
+=======
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, UniqueConstraint
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+>>>>>>> friend_requests
 from typing import Dict
 
 
@@ -30,11 +35,17 @@ class User(Base):
     # and I want this column to be my primary key
     # then accessing john.username -> will give me some data of type string
     # in other words we've mapped the username Python object property to an SQL column of type String
+<<<<<<< HEAD
     
     # CHANGE: modifiedd column definition so that new column can be added without creating issue
     username: Mapped[str] = Column(String, primary_key=True) 
     password: Mapped[str] = Column(String)
     is_conn: Mapped[bool] = Column(Boolean)
+=======
+    username: Mapped[str] = mapped_column(String, primary_key=True)
+    password: Mapped[str] = mapped_column(String)
+    privateKey: Mapped[int] = mapped_column(Integer)
+>>>>>>> friend_requests
 
 
 # stateful counter used to generate the room id
@@ -75,9 +86,22 @@ class Room():
             return None
         return self.dict[user]
     
-# friend request table
 class FriendRequest(Base):
     __tablename__ = "friend_requests"
 
-    sender = Column(String, ForeignKey('user.username'),primary_key=True)
-    reciever = Column(String, ForeignKey('user.username'),primary_key=True)
+    sender = Column(String, ForeignKey('user.username'), primary_key=True)
+    receiver = Column(String, ForeignKey('user.username'), primary_key=True)
+
+
+    # friend list table
+class FriendList(Base):
+    __tablename__ = "friend_list"
+
+    friend1 = Column(String, ForeignKey('user.username'),primary_key=True)
+    friend2 = Column(String, ForeignKey('user.username'),primary_key=True)
+       
+    # Makes sure each row is uniqure
+    __table_args__ = (
+        UniqueConstraint('friend1', 'friend2', name='unique_friend_row'),
+    )
+
