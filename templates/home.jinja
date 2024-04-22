@@ -301,7 +301,7 @@
 
     //Logic to add new friend request to database
     function addFriend() {
-        var token = $('meta[name="csrf-token"]').attr('content');
+        
         let sender = "{{ username }}";
         var friend = $("#friend_name").val();
         let sent_matchFound = false;
@@ -358,7 +358,7 @@
             $.ajax({
                 type: "POST",
                 url: "/friend_request",
-                data: { csrf_token: token, friend: friend, username: "{{ username }}" },
+                data: { friend: friend, username: "{{ username }}" },
                 success: function (response) {
                     console.log("Friend request sent to server:", response);
                 },
@@ -412,7 +412,7 @@
         $.ajax({
             type: "POST",
             url: "/delete_request",
-            data: { csrf_token: token, csrf_token: token,friend: friend, username: sender },
+            data: {friend: friend, username: sender },
             success: function (response) {
                 console.log("Request successfully deleted", response);
             },
@@ -494,7 +494,6 @@
     function show_all_friends() {
         let friend_box = $("#friend_list");
         let friend = "null";
-        var token = $('meta[name="csrf-token"]').attr('content');
 
         // Iterate over each relation in the friendsList
         {% for relation in friendsList %}
@@ -534,7 +533,7 @@
         $.ajax({
             type: "POST",
             url: "/remove_friends",
-            data: { csrf_token: token, user: user, friend: friend },
+            data: { user: user, friend: friend },
             success: function (response) {
                 console.log("Friend successfully removed", response);
             },

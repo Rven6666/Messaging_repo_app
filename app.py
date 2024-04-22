@@ -23,7 +23,8 @@ logging.basicConfig(level=logging.DEBUG)
 # log.setLevel(logging.ERROR)
 
 app = Flask(__name__)
-csrf = CSRFProtect(app)
+#csrf = CSRFProtect(app)
+#app.config['WTF_CSRF_CHECK_DEFAULT'] = True
 
 # secret key used to sign the session cookie
 app.config['SECRET_KEY'] = secrets.token_hex()
