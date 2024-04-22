@@ -6,19 +6,24 @@ the socket event handlers are inside of socket_routes.py
 
 
 import bcrypt
-from flask import Flask, render_template, request, abort, url_for
+from flask import Flask, render_template, request, abort, url_for, session
 from flask_socketio import SocketIO
+from flask_login import LoginManager, logout_user, login_required, current_user
+from flask_login import login_user as flask_user_login
+from flask_wtf.csrf import CSRFProtect
 import db
 import secrets
 import encyrption
 
-# import logging
+import logging
+logging.basicConfig(level=logging.DEBUG)
 
 # this turns off Flask Logging, uncomment this to turn off Logging
 # log = logging.getLogger('werkzeug')
 # log.setLevel(logging.ERROR)
 
 app = Flask(__name__)
+csrf = CSRFProtect(app)
 
 # secret key used to sign the session cookie
 app.config['SECRET_KEY'] = secrets.token_hex()
@@ -31,6 +36,9 @@ import socket_routes
 @app.route("/")
 def index():
     return render_template("index.jinja")
+
+conn_manage = LoginManager(app)
+conn_manage.login_view = 'login'
 
 # login page
 @app.route("/login")
@@ -50,9 +58,27 @@ def login_user():
         return "Error: User does not exist!"
     
     if not bcrypt.checkpw(request.json.get("password").encode('utf-8'), user.password):
-        return "Error: Password does not match!"        
-
+        return "Error: Password does not match!"   
+    
+    flask_user_login(user)
     return url_for('home', username=request.json.get("username"))
+
+@app.route('/logout')
+def logout():
+    logout_user()
+    session.pop('room_id', None)
+    return url_for('index')
+
+@conn_manage.user_loader
+def load_user(userName):
+    user = db.get_user(userName)
+    return user
+
+@app.route('/secure-area')
+@login_required
+def secure_area():
+    #username = request.json.get("username")
+    return 'Access granted to: ' + current_user.username
 
 # handles a get request to the signup page
 @app.route("/signup")
@@ -131,6 +157,18 @@ def remove_friends():
     print(user, friend)
     result = db.remove_friends(user, friend) 
     return result   
+@app.after_request
+def session_management(response):
+    session.modified = True
+    response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    app.config['SESSION_COOKIE_HTTPONLY'] = True
+    app.config['SESSION_COOKIE_SECURE'] = True
+    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+    return response
+
 
 if __name__ == '__main__':
     

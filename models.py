@@ -21,7 +21,7 @@ import db
 
 # data models
 
-Base = declarative_base() # Modified usage here
+Base = declarative_base()
 
 
 # model to store user information
@@ -33,7 +33,7 @@ class User(Base):
     # and I want this column to be my primary key
     # then accessing john.username -> will give me some data of type string
     # in other words we've mapped the username Python object property to an SQL column of type String
-
+    
     username: Mapped[str] = Column(String, primary_key=True) 
     password: Mapped[str] = Column(String)
     is_conn: Mapped[bool] = Column(Boolean)
