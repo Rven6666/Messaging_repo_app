@@ -3,19 +3,16 @@ Sign up page, pretty much the same as login.
 -->
 {% extends 'base.jinja' %}
 
-
 {% block content %} 
     <h1>Sign Up</h1>
     <p>Username</p>
     <input id="username"/>
     <p>Password</p>
     <input id="password" type="password"/>
-    <!-- CSRF Token -->
-    <input type="hidden" id="csrf_token" name="csrf_token" value="{{ csrf_token() }}"/>
     <button onclick="signup()">Sign up</button>
 
     <script>
-         function isValidURL(string) {
+        function isValidURL(string) {
             if (string.length == 0) {
                 return false;
             }
@@ -27,20 +24,23 @@ Sign up page, pretty much the same as login.
 
         // this function is identical to login(), see login.jinja
         async function signup() {
-            let loginURL = "{{ url_for('signup_user') }}";
-            let csrf_token = document.getElementById('csrf_token').value;
-            let res = await axios.post(loginURL, {
+            let signUpURL = "{{ url_for('signup_user') }}";
+            
+            // axios post to send username and password to the server
+            let res = await axios.post(signUpURL, {
                 username: $("#username").val(),
                 password: $("#password").val()
-            },{headers: {
-                'X-CSRFToken': csrf_token
-                }
             });
+
+            // if the server sends in an error message, alert() the error message
             if (!isValidURL(res.data)) {
                 alert(res.data);
                 return;
             }
-            window.open(res.data, "_self")
+
+            // redirects to the URL (i.e., res.data),
+            // using '_self' to ensure it doesn't open a new tab
+            window.open(res.data, "_self");
         }
     </script>
 {% endblock %}
