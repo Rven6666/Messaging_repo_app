@@ -88,13 +88,13 @@ def signup():
 # handles a post request when the user clicks the signup button
 @app.route("/signup/user", methods=["POST"])
 def signup_user():
-    bits = 2048,
+    bits = 10,
     if not request.is_json:
         abort(404)
     username = request.json.get("username")
     password = bcrypt.hashpw(request.json.get("password").encode('utf-8'), bcrypt.gensalt())
-    # privateKey = encyrption.privateKey(bits[0])
-    # print(privateKey)
+    #privateKey = encyrption.privateKey(bits[0])
+    #print(privateKey)
 
     if db.get_user(username) is None:
         db.insert_user(username, password)
@@ -171,8 +171,6 @@ def session_management(response):
 
 
 if __name__ == '__main__':
-    
     ssl_cert = 'certs/info2222.crt'  # SSL certificate file
     ssl_key = 'certs/info2222.key'   # SSL private key file
-    db.setPubKeys()
     socketio.run(app, host='127.0.0.1', port=5000, ssl_context=(ssl_cert, ssl_key))

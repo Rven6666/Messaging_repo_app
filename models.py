@@ -15,8 +15,6 @@ from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, UniqueConst
 from sqlalchemy.orm import declarative_base, Mapped, mapped_column
 
 from typing import Dict
-import encyrption 
-import db
 
 
 # data models
@@ -36,9 +34,22 @@ class User(Base):
     
     username: Mapped[str] = Column(String, primary_key=True) 
     password: Mapped[str] = Column(String)
-    is_conn: Mapped[bool] = Column(Boolean)
-    # privateKey: Mapped[int] = mapped_column(Integer)
+    is_conn: Mapped[bool] = Column(Boolean, default=True)
+    
+    @property
+    def is_authenticated(self):
+        return True
 
+    @property
+    def is_active(self):
+        return True
+
+    @property
+    def is_anonymous(self):
+        return False
+
+    def get_id(self):
+        return self.username
 
 
 # stateful counter used to generate the room id
@@ -108,8 +119,4 @@ class publicKeys(Base):
     def __init__(self, publicKey, GKey):
         self.publicKey = publicKey
         self.GenKey = GKey
-
-   
-    
-
 
