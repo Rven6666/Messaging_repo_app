@@ -301,6 +301,7 @@
 
     //Logic to add new friend request to database
     function addFriend() {
+        var token = $('meta[name="csrf-token"]').attr('content');
         let sender = "{{ username }}";
         var friend = $("#friend_name").val();
         let sent_matchFound = false;
@@ -357,7 +358,7 @@
             $.ajax({
                 type: "POST",
                 url: "/friend_request",
-                data: { friend: friend, username: "{{ username }}" },
+                data: { csrf_token: token, friend: friend, username: "{{ username }}" },
                 success: function (response) {
                     console.log("Friend request sent to server:", response);
                 },
