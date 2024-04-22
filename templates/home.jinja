@@ -412,7 +412,7 @@
         $.ajax({
             type: "POST",
             url: "/delete_request",
-            data: { friend: friend, username: sender },
+            data: { csrf_token: token, csrf_token: token,friend: friend, username: sender },
             success: function (response) {
                 console.log("Request successfully deleted", response);
             },
@@ -494,6 +494,7 @@
     function show_all_friends() {
         let friend_box = $("#friend_list");
         let friend = "null";
+        var token = $('meta[name="csrf-token"]').attr('content');
 
         // Iterate over each relation in the friendsList
         {% for relation in friendsList %}
@@ -533,7 +534,7 @@
         $.ajax({
             type: "POST",
             url: "/remove_friends",
-            data: { user: user, friend: friend },
+            data: { csrf_token: token, user: user, friend: friend },
             success: function (response) {
                 console.log("Friend successfully removed", response);
             },
@@ -657,14 +658,11 @@
     });
 
     socket.on('update_user_stats', function(data) {
-        // Clear existing contents of the user list.
         $('#user_list').empty();
-    
-        // Iterate over the 'connected_users' array received from the server and create a new div element for each user to be appended.
         data.connected_users.forEach(function(user) {
             var userDiv = $('<div class="user"><p></p></div>');
-            userDiv.find('p').text(user); // Set the username in the paragraph within the div.
-            $('#user_list').append(userDiv); // Append the whole div element to #user_list section.
+            userDiv.find('p').text(user); 
+            $('#user_list').append(userDiv); 
         });
     });
 </script>
