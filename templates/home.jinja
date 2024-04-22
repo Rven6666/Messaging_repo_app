@@ -276,7 +276,6 @@
 
     }
 
-
     // function when the user clicks on "Leave Room"
     // emits a "leave" event, telling the server that we want to leave the room
     function leave() {
@@ -367,7 +366,6 @@
         friendsAlready = false;
     }
 
-
     //Adds friends requests to friends request UI.
     function addUserRequest(sender, friend) {
         let sent_box = $("#request_sent");
@@ -385,7 +383,6 @@
         sent_box.append(child);
 
     }
-
 
     // Univerisal show user requests on any page reload/change of users
     function show_requests_sent() {
@@ -416,7 +413,6 @@
         });
     }
 
-
     function show_recieved() {
         let receivedBox = $("#request_recieved");
         let sender = "{{ username }}";
@@ -441,7 +437,6 @@
         })();
         {% endfor %}
     }
-
 
     function friends(friend1, friend2) {
         $.ajax({
@@ -649,6 +644,7 @@
         show_all_friends();
         show_online()
     });
+
 
 </script>
 {% endblock %}

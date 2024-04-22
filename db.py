@@ -10,6 +10,7 @@ from pathlib import Path
 import random
 import sympy
 import bcrypt
+import encyrption
 
 # creates the database directory
 Path("database") \
@@ -23,10 +24,12 @@ engine = create_engine("sqlite:///database/main.db", echo=False)
 # initializes the database
 Base.metadata.create_all(engine)
 
+##### this si not work sdkdnajkdnkldkldaskldjkskldjsakdjlkdjaklsjksajdklsajdalkjdakldjsajsadklj
+
 # inserts a user to the database
-def insert_user(username: str, password: str, privateKey: int):
+def insert_user(username: str, password: str):
     with Session(engine) as session:
-        user = User(username=username, password=password, privateKey=privateKey)
+        user = User(username=username, password=password)
         session.add(user)
         session.commit()
 
@@ -134,3 +137,14 @@ def show_friends_list(username: str):
         # Combine both lists to cover duplicate realtionships
         return friendships_column1 + friendships_column2
 
+def setPubKeys():
+    print("pbukey her!")
+    # Check if table is empty
+    with Session(engine) as session:
+        if session.query(publicKeys).count() == 0:
+            # Generate keys
+            pubPrime, gKey = encyrption.publicKeys(2048)
+            # add keys to table
+            keys = publicKeys(bin(pubPrime),bin(gKey))
+            session.add(keys)
+            session.commit()

@@ -15,6 +15,8 @@ from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, UniqueConst
 from sqlalchemy.orm import declarative_base, Mapped, mapped_column
 
 from typing import Dict
+import encyrption 
+import db
 
 
 # data models
@@ -35,7 +37,7 @@ class User(Base):
     username: Mapped[str] = Column(String, primary_key=True) 
     password: Mapped[str] = Column(String)
     is_conn: Mapped[bool] = Column(Boolean)
-    privateKey: Mapped[int] = mapped_column(Integer)
+    # privateKey: Mapped[int] = mapped_column(Integer)
 
 
 
@@ -95,4 +97,19 @@ class FriendList(Base):
     __table_args__ = (
         UniqueConstraint('friend1', 'friend2', name='unique_friend_row'),
     )
+
+class publicKeys(Base):
+    __tablename__ = "pubKeys"
+    # sets up columns for pibkeys table
+    publicKey = Column(Integer,  primary_key=True)
+    GenKey = Column(Integer, primary_key=True)
+
+        # Override __init__ method
+    def __init__(self, publicKey, GKey):
+        self.publicKey = publicKey
+        self.GenKey = GKey
+
+   
+    
+
 
