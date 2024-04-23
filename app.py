@@ -23,7 +23,8 @@ logging.basicConfig(level=logging.DEBUG)
 # log.setLevel(logging.ERROR)
 
 app = Flask(__name__)
-csrf = CSRFProtect(app)
+#csrf = CSRFProtect(app)
+#app.config['WTF_CSRF_CHECK_DEFAULT'] = True
 
 # secret key used to sign the session cookie
 app.config['SECRET_KEY'] = secrets.token_hex()
@@ -61,10 +62,13 @@ def login_user():
         return "Error: Password does not match!"   
     
     flask_user_login(user)
+    socketio.emit('user_change', {'action': 'login', 'username': username}, namespace='/')
     return url_for('home', username=request.json.get("username"))
 
 @app.route('/logout')
 def logout():
+    username = current_user.username
+    socketio.emit('user_change', {'action': 'logout', 'username': username}, namespace='/')
     logout_user()
     session.pop('room_id', None)
     return url_for('index')
@@ -168,7 +172,6 @@ def session_management(response):
     app.config['SESSION_COOKIE_SECURE'] = True
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
     return response
-
 
 if __name__ == '__main__':
     ssl_cert = 'certs/info2222.crt'  # SSL certificate file

@@ -120,13 +120,7 @@
             <section id="friend_list"></section>
             <div class="space"></div>
             Online users
-            <section id="user_list">
-                {% for user in connected_users %}
-                <div class="user">
-                    <p>{{ user.username }}</p> <!-- Display the username -->
-                </div>
-                {% endfor %}
-            </section>
+            <section id="user_list"></section>
             <section id="add_friend">
                 <p class="text">Send friend request:</p>
                 <input id="friend_name" class="box_size" placeholder="username">
@@ -300,7 +294,7 @@
 
     //Logic to add new friend request to database
     function addFriend() {
-        var token = $('meta[name="csrf-token"]').attr('content');
+        
         let sender = "{{ username }}";
         var friend = $("#friend_name").val();
         let sent_matchFound = false;
@@ -357,7 +351,7 @@
             $.ajax({
                 type: "POST",
                 url: "/friend_request",
-                data: { csrf_token: token, friend: friend, username: "{{ username }}" },
+                data: { friend: friend, username: "{{ username }}" },
                 success: function (response) {
                     console.log("Friend request sent to server:", response);
                 },
@@ -409,7 +403,7 @@
         $.ajax({
             type: "POST",
             url: "/delete_request",
-            data: { csrf_token: token, csrf_token: token, friend: friend, username: sender },
+            data: {friend: friend, username: sender },
             success: function (response) {
                 console.log("Request successfully deleted", response);
             },
@@ -489,7 +483,6 @@
     function show_all_friends() {
         let friend_box = $("#friend_list");
         let friend = "null";
-        var token = $('meta[name="csrf-token"]').attr('content');
 
         // Iterate over each relation in the friendsList
         {% for relation in friendsList %}
@@ -529,7 +522,7 @@
         $.ajax({
             type: "POST",
             url: "/remove_friends",
-            data: { csrf_token: token, user: user, friend: friend },
+            data: { user: user, friend: friend },
             success: function (response) {
                 console.log("Friend successfully removed", response);
             },
@@ -651,7 +644,5 @@
         show_all_friends();
         show_online()
     });
-
-
 </script>
 {% endblock %}
