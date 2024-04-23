@@ -38,8 +38,10 @@ def get_user(username: str):
 def get_conn_user():
     with Session(engine) as session:
         connected_users = session.query(User).filter(User.is_conn == True).all()
+        print(f"\n---\nDB: User table returned updated online stats:")
         for user in connected_users:
             print(f"Username: {user.username}, Connected: {user.is_conn}")
+        print("---\n")
         return connected_users
 
 def update_conn(username, is_connected):
@@ -51,7 +53,7 @@ def update_conn(username, is_connected):
         )
     session.execute(stmt)
     session.commit()
-    print(f"conn_status updated for {username} to {is_connected}")
+    print(f"\nDB.connUpdate: conn_status updated for {username} to {is_connected}\n")
 
 
 #sents friend reqursts

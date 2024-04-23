@@ -62,10 +62,13 @@ def login_user():
         return "Error: Password does not match!"   
     
     flask_user_login(user)
+    socketio.emit('user_change', {'action': 'login', 'username': username}, namespace='/')
     return url_for('home', username=request.json.get("username"))
 
 @app.route('/logout')
 def logout():
+    username = current_user.username
+    socketio.emit('user_change', {'action': 'logout', 'username': username}, namespace='/')
     logout_user()
     session.pop('room_id', None)
     return url_for('index')
@@ -169,7 +172,6 @@ def session_management(response):
     app.config['SESSION_COOKIE_SECURE'] = True
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
     return response
-
 
 if __name__ == '__main__':
     ssl_cert = 'certs/info2222.crt'  # SSL certificate file
