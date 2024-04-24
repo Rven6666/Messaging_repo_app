@@ -78,12 +78,6 @@ def load_user(userName):
     user = db.get_user(userName)
     return user
 
-@app.route('/secure-area')
-@login_required
-def secure_area():
-    #username = request.json.get("username")
-    return 'Access granted to: ' + current_user.username
-
 # handles a get request to the signup page
 @app.route("/signup")
 def signup():
@@ -112,6 +106,7 @@ def page_not_found(_):
 
 # home page, where the messaging app is
 @app.route("/home")
+@login_required
 def home():
     if request.args.get("username") is None:
         abort(404)
@@ -131,6 +126,7 @@ def home():
 
 #function to send friends reqursts
 @app.route('/friend_request', methods=['POST'])
+@login_required
 def add_friend():
     friend = request.form.get('friend')
     sender = request.form.get('username')
@@ -139,6 +135,7 @@ def add_friend():
 
 #cancel a friends request
 @app.route('/delete_request', methods=['POST'])
+@login_required
 def delete_user():
     friend = request.form.get('friend')
     username = request.form.get('username')
@@ -147,6 +144,7 @@ def delete_user():
 
 #show friends
 @app.route('/friends_list', methods=['POST'])
+@login_required
 def friends():
     friend1 = request.form.get('friend1')
     friend2 = request.form.get('friend2')
@@ -155,6 +153,7 @@ def friends():
 
 #remove friends 
 @app.route('/remove_friends', methods=['POST'])
+@login_required
 def remove_friends():
     user = request.form.get('user')
     friend = request.form.get('friend')
