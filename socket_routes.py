@@ -31,14 +31,12 @@ logger = logging.getLogger(__name__)
 def connect(auth=None):
     username = request.cookies.get("username")
     room_id = request.cookies.get("room_id")
-    logger.debug(f"User {username} is authenticated: %s", current_user.is_authenticated)
-    db.update_conn(username,True)
+    logger.debug(f"socket: User {username} is attempting to connect.")
     if not current_user.is_authenticated:
-        db.update_conn(username,False)
-        update_conn_stats() # call update in frontend userLs
-        logger.debug(f"User {username} is made unauthorized.")
+        logger.debug(f"User {username} is identified as unauthorized.")
+        disconnect()
         return 'Unauthorized!'
-    
+    db.update_conn(username,True)
     update_conn_stats()# call update in frontend userLs
     
     if room_id is None or username is None:
@@ -60,6 +58,7 @@ def disconnect():
     username = request.cookies.get("username")
     room_id = request.cookies.get("room_id")
     db.update_conn(username,False)
+    logger.debug(f"Socket: User {username} is disconnected.")
     update_conn_stats() # call update in frontend userLs
     logout_user()
     session.pop(room_id, None)
@@ -124,6 +123,6 @@ def leave(username, room_id):
     room.leave_room(username)
 
 def update_conn_stats():# call update in frontend userLs
-    logger.debug("\nsocket: called update in frontend.\n")
+    logger.debug(f"\nsocket: called update in frontend.\n")
     db_received_activ_users = [{"username": user.username} for user in db.get_conn_user()]
     socketio.emit('update_user_stats', {'connected_users': db_received_activ_users}, namespace='/')

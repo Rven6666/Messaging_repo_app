@@ -5,6 +5,8 @@
 
 
 {% block content %}
+<!-- CSRF Token -->
+<input type="hidden" id="csrf_token" name="csrf_token" value="{{ csrf_token() }}"/>
 <style>
     nav {
         border-bottom: 1px solid black;
@@ -294,76 +296,71 @@
 
     //Logic to add new friend request to database
     function addFriend() {
-        
         let sender = "{{ username }}";
-        var friend = $("#friend_name").val();
+        let friend = $("#friend_name").val().trim();
+        let sent_box = $("#request_sent");
+        let friend_box = $("#friend_list");
         let sent_matchFound = false;
         let friendsAlready = false;
+    
         // Check if the input field is not empty
-        if (friend.trim() !== "") {
-            let sent_box = $("#request_sent");
-            let friend_box = $("#friend_list");
-
-            // CEHKS IF FRIENDS REQUEST HAS BEEN SENT 
+        if (friend !== "") {
+            // Check for duplicates in sent and already friends
             sent_box.children('p').each(function () {
-                let ele_text = $(this).text();
-                //checks for duplicate requests.
-                console.log(ele_text, friend.trim())
-                if (ele_text.trim() === (friend.trim() + "Cancel")) {
+                if ($(this).text().trim() === friend + "Cancel") {
                     sent_matchFound = true;
-                    return;
-                } else {
-                    console.log("no duplicate freind requests found")
-                    sent_matchFound = false;
+                    return false; // Break loop
                 }
             });
-
-            // CHECKS IF FRIENDS ALREADY BEFORE REQUEST
-            friend_box.children('p').each(function () {
-                let frien_ele_text = $(this).text();
-                //checks for duplicate requests.
-                console.log(frien_ele_text, friend.trim())
-                if (frien_ele_text.trim() === (friend.trim() + "Chatx")) {
-                    friendsAlready = true;
-                    return;
-                } else {
-                    console.log("no duplicate freind requests found")
-                    friendsAlready = false;
-                }
-            });
-
-
-            if (sent_matchFound) {
-                alert(`Invalid selection - try again.`);
-                console.log("duplicate request found. Exiting function call.")
-                return; // if duplicate request is true exit function
-            }
-            if (friendsAlready) {
-                alert(`You are already friends.`);
-                console.log("request failed, already friends.")
-                return; // if duplicate request is true exit function
-            }
-
-
-            addUserRequest(sender, friend);
-
-            // Send friend request to the server
-            $.ajax({
-                type: "POST",
-                url: "/friend_request",
-                data: { friend: friend, username: "{{ username }}" },
-                success: function (response) {
-                    console.log("Friend request sent to server:", response);
-                },
-                error: function (xhr, status, error) {
-                    console.error("Error sending friend request:", error);
-                }
-            });
+            sendFriendRequest(sender, friend);
         } else {
-            alert("No user input, try again.")
+            alert("No user input, try again.");
         }
-        matchFound = false;
-        friendsAlready = false;
+    }
+
+    function sendFriendRequest(username, friendName) {
+        let sent_box = $("#request_sent");
+        let friend_box = $("#friend_list");
+        let isRequestPending = false, isAlreadyFriend = false;
+
+        let csrfToken = document.getElementById('csrf_token').value;
+    
+        sent_box.find('p').each(function() {
+            if($(this).text().trim().includes(friendName)) {
+                isRequestPending = true;
+            }
+        });
+    
+        friend_box.find('p').each(function() {
+            if($(this).text().trim().includes(friendName + " Chatx")) {
+                isAlreadyFriend = true;
+            }
+        });
+    
+        if(isRequestPending) {
+            alert("Friend request already sent to " + friendName);
+            return;
+        }
+    
+        if(isAlreadyFriend) {
+            alert("You are already friends with " + friendName);
+            return;
+        }
+    
+        // Send the friend request for no DB side issue found
+        $.ajax({
+            type: "POST",
+            url: "/friend_request",
+            data: { friend: friendName, username: username },
+            headers: {'X-CSRFToken': csrfToken},
+            success: function (response) {
+                console.log("Friend request sent to server:", response);
+                alert("Friend request sent successfully to " + friendName + "!");
+            },
+            error: function(xhr, status, error) {
+                console.error("Error sending friend request:", error);
+            }
+        });
     }
 
     //Adds friends requests to friends request UI.
@@ -398,12 +395,14 @@
         // Remove child element and cancel_button
         console.log("Sender:", sender)
         console.log("Reciever", friend)
+        let csrfToken = document.getElementById('csrf_token').value;
 
         // Send AJAX request to delete the request from the server
         $.ajax({
             type: "POST",
             url: "/delete_request",
             data: {friend: friend, username: sender },
+            headers: {'X-CSRFToken': csrfToken},
             success: function (response) {
                 console.log("Request successfully deleted", response);
             },
@@ -439,10 +438,12 @@
     }
 
     function friends(friend1, friend2) {
+        let csrfToken = document.getElementById('csrf_token').value;
         $.ajax({
             type: "POST",
             url: "/friends_list",
             data: { friend1: friend1, friend2: friend2 },
+            headers: {'X-CSRFToken': csrfToken},
             success: function (response) {
                 console.log("Friend request sent to server:", response);
             },
@@ -519,10 +520,12 @@
 
     function remove_friends(user, friend) {
         // Send AJAX request to delete the request from the server
+        let csrfToken = document.getElementById('csrf_token').value;
         $.ajax({
             type: "POST",
             url: "/remove_friends",
             data: { user: user, friend: friend },
+            headers: {'X-CSRFToken': csrfToken},
             success: function (response) {
                 console.log("Friend successfully removed", response);
             },
@@ -533,116 +536,47 @@
 
     }
 
-    function show_online() {
+    function show_online(connectedUsers) {
         let sender = "{{ username }}";
         let online_box = $("#user_list");
-        let friend = "null";
-        let sent_matchFound = false;
-        let friendsAlready = false;
+        online_box.empty();
 
-        // Iterate over each relation in the friendsList
-        {% for user in connected_users %}
-        friend = "{{ user.username }}"
-        console.log("showing online users", friend.trim());
-
-        (function () {
-            // Create a closure to capture the current value of friend
+        let sent_box = $("#request_sent");
+        let friend_box = $("#friend_list");
+        
+        connectedUsers.forEach(function(user) {
+            let friend = user.username;  // Adjusted to use username passed from server
+            console.log("Showing online users", friend);
+    
             let child = $("<p style='color: black; margin: 0px; text-align: right;'></p>").text(friend);
-            let send_request = $("<button>").text("Add").addClass("online_friend_request").data("friend-name", friend);
-
-            // Define a CSS class
-            let buttonStyle = {
+            let send_request_button = $("<button>").text("Add").addClass("online_friend_request").data("friend-name", friend);
+    
+            send_request_button.css({
                 "margin-left": "5px",
                 "margin-top": "2px",
                 "margin-bottom": "2px",
                 "margin-right": "2px"
-            };
-
-            // Apply the CSS class to both buttons
-            send_request.css(buttonStyle);
-
-            child.append(send_request);
-            // Append the send_request to the child element
-            child.append(send_request);
-
-            // Append the child element to the online_box
-            online_box.append(child);
-
-            // Attach click event listener to the button
-            send_request.on("click", function () {
-                let sent_box = $("#request_sent");
-                let friend_box = $("#friend_list");
-
-                // CEHKS IF FRIENDS REQUEST HAS BEEN SENT 
-                sent_box.children('p').each(function () {
-                    let ele_text = $(this).text();
-                    //checks for duplicate requests.
-                    console.log(ele_text, friend.trim())
-                    if (ele_text.trim() === (friend.trim() + "Cancel")) {
-                        sent_matchFound = true;
-                        return;
-                    } else {
-                        console.log("no duplicate freind requests found")
-                        sent_matchFound = false;
-                    }
-                });
-
-                // CHECKS IF FRIENDS ALREADY BEFORE REQUEST
-                friend_box.children('p').each(function () {
-                    let frien_ele_text = $(this).text();
-                    //checks for duplicate requests.
-                    console.log(frien_ele_text, friend.trim())
-                    if (frien_ele_text.trim() === (friend.trim() + "Chatx")) {
-                        friendsAlready = true;
-                        return;
-                    } else {
-                        console.log("no duplicate freind requests found")
-                        friendsAlready = false;
-                    }
-                });
-
-
-                if (sent_matchFound) {
-                    alert(`Invalid selection - try again.`);
-                    console.log("duplicate request found. Exiting function call.")
-                    return; // if duplicate request is true exit function
-                }
-                if (friendsAlready) {
-                    alert(`You are already friends.`);
-                    console.log("request failed, already friends.")
-                    return; // if duplicate request is true exit function
-                }
-
-
-                addUserRequest(sender, friend);
-
-                // Send friend request to the server
-                $.ajax({
-                    type: "POST",
-                    url: "/friend_request",
-                    data: { friend: friend, username: "{{ username }}" },
-                    success: function (response) {
-                        console.log("Friend request sent to server:", response);
-                    },
-                    error: function (xhr, status, error) {
-                        console.error("Error sending friend request:", error);
-                    }
-                });
             });
-
-
-        })(friend);
-
-
-        {% endfor %}
+    
+            child.append(send_request_button);
+            online_box.append(child);
+    
+            // Attach event listener for friend request button
+            send_request_button.on("click", function () {
+                sendFriendRequest("{{ username }}", friend);
+            });
+        });
     }
 
     $(document).ready(function () {
+        socket.on('update_user_stats', function(data) {
+            show_online(data.connected_users);
+        });
         // Call the function to load names and buttons
         show_recieved();
         show_requests_sent()
         show_all_friends();
-        show_online()
+        
     });
 </script>
 {% endblock %}
