@@ -17,14 +17,16 @@ import encyrption
 
 import logging
 logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 # this turns off Flask Logging, uncomment this to turn off Logging
 # log = logging.getLogger('werkzeug')
 # log.setLevel(logging.ERROR)
 
 app = Flask(__name__)
-#csrf = CSRFProtect(app)
-#app.config['WTF_CSRF_CHECK_DEFAULT'] = True
+csrf = CSRFProtect(app)
+app.config['WTF_CSRF_CHECK_DEFAULT'] = True
+app.config['WTF_CSRF_HEADERS'] = ["X-CSRFToken", "X-CSRF-Token"]
 
 # secret key used to sign the session cookie
 app.config['SECRET_KEY'] = secrets.token_hex()
@@ -131,6 +133,7 @@ def add_friend():
     friend = request.form.get('friend')
     sender = request.form.get('username')
     db.friend_request(sender, friend) 
+    update_social_stats(sender, 'request_sent')
     return ('Friend request sent successfully!')    
 
 #cancel a friends request
@@ -140,6 +143,7 @@ def delete_user():
     friend = request.form.get('friend')
     username = request.form.get('username')
     db.cancel_request(username, friend)
+    update_social_stats(username, 'request_deleted')
     return ('Request deleted successfully')  
 
 #show friends
@@ -149,6 +153,7 @@ def friends():
     friend1 = request.form.get('friend1')
     friend2 = request.form.get('friend2')
     db.friends(friend1, friend2) 
+    update_social_stats(friend1, 'friend_added')
     return ('Friend added!')    
 
 #remove friends 
@@ -159,7 +164,33 @@ def remove_friends():
     friend = request.form.get('friend')
     print(user, friend)
     result = db.remove_friends(user, friend) 
+    update_social_stats(user, 'friend_removed')
     return result   
+
+def update_social_stats(sender, update_type):
+    """
+    Emits a specialized Socket.IO message on friend-related changes.
+
+    :param sender: The username of the person initiating the change.
+    :param update_type: Type of update ('add', 'delete', etc.)
+    """
+    data = {
+        'update_type': update_type,
+        'sender': sender
+    }
+    friend_list = db.show_friends_list(sender)
+    request_sent = db.show_friends_sent(sender)
+    request_received = db.friends_received(sender)
+    
+    # Adding current user's friends and requests details to the data
+    data.update({
+        'friend_list': friend_list,
+        'request_sent': request_sent,
+        'request_received': request_received
+    })
+    logger.debug(f"\nApp: called update in frontend.\n")
+    socketio.emit('social_update', data, namespace='/')
+
 @app.after_request
 def session_management(response):
     session.modified = True

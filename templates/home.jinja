@@ -5,6 +5,8 @@
 
 
 {% block content %}
+<!-- CSRF Token -->
+<input type="hidden" id="csrf_token" name="csrf_token" value="{{ csrf_token() }}"/>
 <style>
     nav {
         border-bottom: 1px solid black;
@@ -321,6 +323,8 @@
         let sent_box = $("#request_sent");
         let friend_box = $("#friend_list");
         let isRequestPending = false, isAlreadyFriend = false;
+
+        let csrfToken = document.getElementById('csrf_token').value;
     
         sent_box.find('p').each(function() {
             if($(this).text().trim().includes(friendName)) {
@@ -349,6 +353,7 @@
             type: "POST",
             url: "/friend_request",
             data: { friend: friendName, username: username },
+            headers: {'X-CSRFToken': csrfToken},
             success: function (response) {
                 console.log("Friend request sent to server:", response);
                 alert("Friend request sent successfully to " + friendName + "!");
@@ -393,12 +398,14 @@
         // Remove child element and cancel_button
         console.log("Sender:", sender)
         console.log("Reciever", friend)
+        let csrfToken = document.getElementById('csrf_token').value;
 
         // Send AJAX request to delete the request from the server
         $.ajax({
             type: "POST",
             url: "/delete_request",
             data: {friend: friend, username: sender },
+            headers: {'X-CSRFToken': csrfToken},
             success: function (response) {
                 console.log("Request successfully deleted", response);
             },
@@ -436,10 +443,12 @@
 
 
     function friends(friend1, friend2) {
+        let csrfToken = document.getElementById('csrf_token').value;
         $.ajax({
             type: "POST",
             url: "/friends_list",
             data: { friend1: friend1, friend2: friend2 },
+            headers: {'X-CSRFToken': csrfToken},
             success: function (response) {
                 console.log("Friend request sent to server:", response);
             },
@@ -516,10 +525,12 @@
 
     function remove_friends(user, friend) {
         // Send AJAX request to delete the request from the server
+        let csrfToken = document.getElementById('csrf_token').value;
         $.ajax({
             type: "POST",
             url: "/remove_friends",
             data: { user: user, friend: friend },
+            headers: {'X-CSRFToken': csrfToken},
             success: function (response) {
                 console.log("Friend successfully removed", response);
             },
